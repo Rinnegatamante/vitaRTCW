@@ -1141,15 +1141,11 @@ void RE_StretchRaw( int x, int y, int w, int h, int cols, int rows, const byte *
 	if ( cols != tr.scratchImage[client]->width || rows != tr.scratchImage[client]->height ) {
 		tr.scratchImage[client]->width = tr.scratchImage[client]->uploadWidth = cols;
 		tr.scratchImage[client]->height = tr.scratchImage[client]->uploadHeight = rows;
-#ifdef USE_OPENGLES
 		qglTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
-#else
-		qglTexImage2D( GL_TEXTURE_2D, 0, 3, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
-#endif
-		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 	} else {
 		if ( dirty ) {
 			// otherwise, just subimage upload it so that drivers can tell we are going to be changing
@@ -1167,42 +1163,22 @@ void RE_StretchRaw( int x, int y, int w, int h, int cols, int rows, const byte *
 
 	qglColor3f( tr.identityLight, tr.identityLight, tr.identityLight );
 
-#ifdef USE_OPENGLES
-	GLfloat tex[] = {
-	 0.5f / cols,  0.5f / rows,
-	 ( cols - 0.5f ) / cols ,  0.5f / rows,
-	 ( cols - 0.5f ) / cols, ( rows - 0.5f ) / rows,
-	 0.5f / cols, ( rows - 0.5f ) / rows };
-	GLfloat vtx[] = {
-	 x, y,
-	 x+w, y,
-	 x+w, y+h,
-	 x, y+h };
-	GLboolean text = qglIsEnabled(GL_TEXTURE_COORD_ARRAY);
-	GLboolean glcol = qglIsEnabled(GL_COLOR_ARRAY);
-	if (glcol)
-		qglDisableClientState(GL_COLOR_ARRAY);
-	if (!text)
-		qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
-	qglTexCoordPointer( 2, GL_FLOAT, 0, tex );
-	qglVertexPointer  ( 2, GL_FLOAT, 0, vtx );
-	qglDrawArrays( GL_TRIANGLE_FAN, 0, 4 );
-	if (!text)
-		qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
-	if (glcol)
-		qglEnableClientState(GL_COLOR_ARRAY);
-#else
-	qglBegin( GL_QUADS );
-	qglTexCoord2f( 0.5f / cols,  0.5f / rows );
-	qglVertex2f( x, y );
-	qglTexCoord2f( ( cols - 0.5f ) / cols,  0.5f / rows );
-	qglVertex2f( x + w, y );
-	qglTexCoord2f( ( cols - 0.5f ) / cols, ( rows - 0.5f ) / rows );
-	qglVertex2f( x + w, y + h );
-	qglTexCoord2f( 0.5f / cols, ( rows - 0.5f ) / rows );
-	qglVertex2f( x, y + h );
-	qglEnd();
-#endif
+	float texcoords[] = {
+		0.5f / cols,  0.5f / rows,
+		( cols - 0.5f ) / cols ,  0.5f / rows,
+		( cols - 0.5f ) / cols, ( rows - 0.5f ) / rows,
+		0.5f / cols, ( rows - 0.5f ) / rows
+	};
+	float vertices[] = {
+		x, y, 0.0f,
+		x+w, y, 0.0f,
+		x+w, y+h, 0.0f,
+		x, y+h, 0.0f
+	};
+	
+	vglVertexPointer(3, GL_FLOAT, 0, 4, vertices);
+	vglTexCoordPointer(2, GL_FLOAT, 0, 4, texcoords);
+	vglDrawObjects(GL_TRIANGLE_FAN, 4, GL_TRUE);
 }
 
 
@@ -1214,15 +1190,11 @@ void RE_UploadCinematic( int w, int h, int cols, int rows, const byte *data, int
 	if ( cols != tr.scratchImage[client]->width || rows != tr.scratchImage[client]->height ) {
 		tr.scratchImage[client]->width = tr.scratchImage[client]->uploadWidth = cols;
 		tr.scratchImage[client]->height = tr.scratchImage[client]->uploadHeight = rows;
-#ifdef USE_OPENGLES
 		qglTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
-#else
-		qglTexImage2D( GL_TEXTURE_2D, 0, 3, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
-#endif
-		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 	} else {
 		if ( dirty ) {
 			// otherwise, just subimage upload it so that drivers can tell we are going to be changing
@@ -1499,44 +1471,24 @@ void RB_ShowImages( void ) {
 			w *= image->uploadWidth / 512.0f;
 			h *= image->uploadHeight / 512.0f;
 		}
-
-#ifdef USE_OPENGLES
-		GLfloat tex[] = {
-		 0, 0, 
-		 1, 0,
-		 1, 1, 
-		 0, 1 };
-		GLfloat vtx[] = {
-		 x, y,
-		 x + w, y,
-		 x + w, y + h,
-		 x, y + h };
-		GLboolean text = qglIsEnabled(GL_TEXTURE_COORD_ARRAY);
-		GLboolean glcol = qglIsEnabled(GL_COLOR_ARRAY);
-		if (glcol)
-			qglDisableClientState(GL_COLOR_ARRAY);
-		if (!text)
-			qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
-		qglTexCoordPointer( 2, GL_FLOAT, 0, tex );
-		qglVertexPointer  ( 2, GL_FLOAT, 0, vtx );
-		qglDrawArrays( GL_TRIANGLE_FAN, 0, 4 );
-		if (glcol)
-			qglEnableClientState(GL_COLOR_ARRAY);
-		if (!text)
-			qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
-#else
+		
 		GL_Bind( image );
-		qglBegin( GL_QUADS );
-		qglTexCoord2f( 0, 0 );
-		qglVertex2f( x, y );
-		qglTexCoord2f( 1, 0 );
-		qglVertex2f( x + w, y );
-		qglTexCoord2f( 1, 1 );
-		qglVertex2f( x + w, y + h );
-		qglTexCoord2f( 0, 1 );
-		qglVertex2f( x, y + h );
-		qglEnd();
-#endif
+
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	
+		float texcoord[] = {
+			0, 0, 1, 0, 1, 1, 0, 1
+		};
+		float vertex[] = {
+			x, y, 0.0f,
+			x+w, y, 0.0f,
+			x+w, y+h, 0.0f,
+			x, y+h, 0.0f
+		};
+	
+		vglVertexPointer(3, GL_FLOAT, 0, 4, vertex);
+		vglTexCoordPointer(2, GL_FLOAT, 0, 4, texcoord);
+		vglDrawObjects(GL_TRIANGLE_FAN, 4, GL_TRUE);
 	}
 
 	qglFinish();
