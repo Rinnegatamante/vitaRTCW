@@ -1,15 +1,15 @@
 TARGET   := cgame
 SOURCES  := .
+SOURCE_EXTRA := ../ui_qvm/ui_shared.c ../qcommon/q_math.c ../qcommon/q_shared.c
 CPPSOURCES := 
-INCLUDES := ../renderer ../qcommon ../botlib ../client ../server ../psp2 ../sys ../splines
+INCLUDES := ../renderer ../qcommon ../botlib ../client ../server ../psp2 ../sys ../splines ../game
 
-LIBS = -lvitaGL -lvorbisfile -lvorbis -logg  -lspeexdsp -lmpg123 \
-	-lc -lSceCommonDialog_stub -lSceAudio_stub -lSceLibKernel_stub \
-	-lSceNet_stub -lSceNetCtl_stub -lpng -lz -lSceDisplay_stub -lSceGxm_stub \
-	-lSceSysmodule_stub -lSceCtrl_stub -lSceTouch_stub -lSceMotion_stub -lm -lSceAppMgr_stub \
-	-lSceAppUtil_stub -lScePgf_stub -ljpeg -lSceRtc_stub -lScePower_stub	
+LIBS = -lSceCommonDialog_stub -lSceAudio_stub -lSceLibKernel_stub \
+	-lSceNet_stub -lSceNetCtl_stub -lSceDisplay_stub -lSceGxm_stub \
+	-lSceSysmodule_stub -lSceCtrl_stub -lSceTouch_stub -lSceMotion_stub -lSceAppMgr_stub \
+	-lSceAppUtil_stub -lScePgf_stub -lSceRtc_stub -lScePower_stub -lm -lc	
 
-CFILES   := $(foreach dir,$(SOURCES), $(wildcard $(dir)/*.c))
+CFILES   := $(foreach dir,$(SOURCES), $(wildcard $(dir)/*.c)) $(SOURCE_EXTRA)
 CPPFILES   := $(foreach dir,$(CPPSOURCES), $(wildcard $(dir)/*.cpp))
 BINFILES := $(foreach dir,$(DATA), $(wildcard $(dir)/*.bin))
 OBJS     := $(addsuffix .o,$(BINFILES)) $(CFILES:.c=.o) $(CPPFILES:.cpp=.o)
@@ -21,9 +21,9 @@ CC      = $(PREFIX)-gcc
 CXX      = $(PREFIX)-g++
 CFLAGS  = $(INCLUDE) -D__PSP2__ -D__FLOAT_WORD_ORDER=1 -D__GNU__ -DRELEASE \
         -DUSE_ICON -DARCH_STRING=\"arm\" -DCGAME -DUSE_CODEC_VORBIS \
-        -DDEFAULT_BASEDIR=\"ux0:/data/iortcw\" -fno-lto \
+        -DDEFAULT_BASEDIR=\"ux0:/data/iortcw\" -fno-lto -DCGAMEDLL \
         -DPRODUCT_VERSION=\"1.36_GIT_ba68b99c-2018-01-23\" -DHAVE_VM_COMPILED=true \
-        -mfpu=neon -mcpu=cortex-a9 -fsigned-char \
+        -mfpu=neon -mcpu=cortex-a9 -fsigned-char -nostartfiles \
         -Wl,-q -O3 -g -ffast-math -fno-short-enums
 CXXFLAGS  = $(CFLAGS) -fno-exceptions -std=gnu++11 -fpermissive
 ASFLAGS = $(CFLAGS)
