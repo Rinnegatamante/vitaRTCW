@@ -630,8 +630,6 @@ static int Sys_Exec( void )
 		// Parent
 		int exitCode;
 
-		wait( &exitCode );
-
 		return WEXITSTATUS( exitCode );
 	}
 }
