@@ -56,7 +56,7 @@ CON_Print
 */
 void CON_Print(const char *msg) {
 #ifndef RELEASE
-    FILE* f = fopen("ux0:data/ioq3/log.txt", "a+");
+    FILE* f = fopen("ux0:data/iortcw/log.txt", "a+");
 	fwrite(msg, 1, strlen(msg), f);
 	fclose(f);
 #endif
