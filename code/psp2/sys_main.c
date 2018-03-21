@@ -390,23 +390,8 @@ int rtcw_main( int argc, char **argv )
 	Sys_Milliseconds( );
 
 	sceIoMkdir(DEFAULT_BASEDIR, 777);
-	Sys_SetBinaryPath( Sys_Dirname( argv[ 0 ] ) );
+	Sys_SetBinaryPath( DEFAULT_BASEDIR );
 	Sys_SetDefaultInstallPath( DEFAULT_BASEDIR );
-
-	// Concatenate the command line for passing to Com_Init
-	for( i = 1; i < argc; i++ )
-	{
-		const qboolean containsSpaces = strchr(argv[i], ' ') != NULL;
-		if (containsSpaces)
-			Q_strcat( commandLine, sizeof( commandLine ), "\"" );
-
-		Q_strcat( commandLine, sizeof( commandLine ), argv[ i ] );
-
-		if (containsSpaces)
-			Q_strcat( commandLine, sizeof( commandLine ), "\"" );
-
-		Q_strcat( commandLine, sizeof( commandLine ), " " );
-	}
 
 	CON_Init( );
 	Com_Init( commandLine );
@@ -434,7 +419,7 @@ int main(int argc, char **argv) {
 	IN_Init(NULL);
 	
 	// We need a bigger stack to run Quake 3, so we create a new thread with a proper stack size
-	SceUID main_thread = sceKernelCreateThread("RTCW", rtcw_main, 0x40, 0x200000, 0, 0, NULL);
+	SceUID main_thread = sceKernelCreateThread("RTCW", rtcw_main, 0x40, 0x400000, 0, 0, NULL);
 	if (main_thread >= 0){
 		sceKernelStartThread(main_thread, 0, NULL);
 		sceKernelWaitThreadEnd(main_thread, NULL, NULL);
