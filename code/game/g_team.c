@@ -573,9 +573,9 @@ qboolean Team_GetLocationMsg( gentity_t *ent, char *loc, int loclen ) {
 		if ( best->count > 7 ) {
 			best->count = 7;
 		}
-		Com_sprintf( loc, loclen, "%c%c%s" S_COLOR_WHITE, Q_COLOR_ESCAPE, best->count + '0', best->message );
+		snprintf( loc, loclen, "%c%c%s" S_COLOR_WHITE, Q_COLOR_ESCAPE, best->count + '0', best->message );
 	} else {
-		Com_sprintf( loc, loclen, "%s", best->message );
+		snprintf( loc, loclen, "%s", best->message );
 	}
 
 	return qtrue;
@@ -797,7 +797,7 @@ void TeamplayInfoMessage( gentity_t *ent ) {
 				a = 0;
 			}
 
-			Com_sprintf( entry, sizeof( entry ),
+			snprintf( entry, sizeof( entry ),
 						 " %i %i %i %i %i %i",
 						 level.sortedClients[i], player->client->pers.teamState.location, h, a,
 						 player->client->ps.weapon, player->s.powerups );
@@ -952,7 +952,7 @@ void SP_team_WOLF_objective( gentity_t *ent ) {
 	// set current # spawntargets
 	level.numspawntargets = numobjectives;
 	trap_GetConfigstring( CS_MULTI_INFO, cs, sizeof( cs ) );
-	Com_sprintf( numspawntargets, sizeof(numspawntargets), "%d", numobjectives );
+	snprintf( numspawntargets, sizeof(numspawntargets), "%d", numobjectives );
 	Info_SetValueForKey( cs, "numspawntargets", numspawntargets );
 	trap_SetConfigstring( CS_MULTI_INFO, cs );
 

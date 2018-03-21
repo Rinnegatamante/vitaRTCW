@@ -12,7 +12,7 @@ LIBS = -lvitaGL -lvorbisfile -lvorbis -logg  -lspeexdsp -lmpg123 \
 	-lSceSysmodule_stub -lSceCtrl_stub -lSceTouch_stub -lSceMotion_stub -lm -lSceAppMgr_stub \
 	-lSceAppUtil_stub -lScePgf_stub -ljpeg -lSceRtc_stub -lScePower_stub	
 
-CFILES   := $(foreach dir,$(SOURCES), $(wildcard $(dir)/*.c))
+CFILES   := $(filter-out code/psp2/psp2_dll_hacks.c,$(foreach dir,$(SOURCES), $(wildcard $(dir)/*.c)))
 CPPFILES   := $(foreach dir,$(CPPSOURCES), $(wildcard $(dir)/*.cpp))
 BINFILES := $(foreach dir,$(DATA), $(wildcard $(dir)/*.bin))
 OBJS     := $(addsuffix .o,$(BINFILES)) $(CFILES:.c=.o) $(CPPFILES:.cpp=.o)
@@ -24,9 +24,8 @@ CC      = $(PREFIX)-gcc
 CXX      = $(PREFIX)-g++
 CFLAGS  = $(INCLUDE) -D__PSP2__ -D__FLOAT_WORD_ORDER=1 -D__GNU__ \
         -DUSE_ICON -DARCH_STRING=\"arm\" -DBOTLIB -DUSE_CODEC_VORBIS \
-        -DDEFAULT_BASEDIR=\"ux0:/data/iortcw\" -DRELEASE \
         -DPRODUCT_VERSION=\"1.36_GIT_ba68b99c-2018-01-23\" -DHAVE_VM_COMPILED=true \
-        -mfpu=neon -mcpu=cortex-a9 -fsigned-char \
+        -mfpu=neon -mcpu=cortex-a9 -fsigned-char -DRELEASE \
         -Wl,-q -O3 -g -ffast-math -fno-short-enums
 CXXFLAGS  = $(CFLAGS) -fno-exceptions -std=gnu++11 -fpermissive
 ASFLAGS = $(CFLAGS)

@@ -1302,9 +1302,9 @@ void CG_GenerateShaders( char *filename, char *shaderName, char *dir, int numFra
 		d = lastNumber;
 
 		if ( compressedVersionAvailable ) {
-			Com_sprintf( str, sizeof( str ), "%s%i\n{\n\tnofog%s\n\tallowCompress\n\tcull none\n\t{\n\t\tmapcomp sprites/%s_lg/spr%i%i%i.tga\n\t\tmapnocomp sprites/%s/spr%i%i%i.tga\n\t\tblendFunc %s %s\n%s\t}\n}\n", shaderName, i + 1, nomipmap ? "\n\tnomipmaps" : "", dir, b, c, d, dir, b, c, d, srcBlend, dstBlend, extras );
+			snprintf( str, sizeof( str ), "%s%i\n{\n\tnofog%s\n\tallowCompress\n\tcull none\n\t{\n\t\tmapcomp sprites/%s_lg/spr%i%i%i.tga\n\t\tmapnocomp sprites/%s/spr%i%i%i.tga\n\t\tblendFunc %s %s\n%s\t}\n}\n", shaderName, i + 1, nomipmap ? "\n\tnomipmaps" : "", dir, b, c, d, dir, b, c, d, srcBlend, dstBlend, extras );
 		} else {
-			Com_sprintf( str, sizeof( str ), "%s%i\n{\n\tnofog%s\n\tallowCompress\n\tcull none\n\t{\n\t\tmap sprites/%s/spr%i%i%i.tga\n\t\tblendFunc %s %s\n%s\t}\n}\n", shaderName, i + 1, nomipmap ? "\n\tnomipmap" : "", dir, b, c, d, srcBlend, dstBlend, extras );
+			snprintf( str, sizeof( str ), "%s%i\n{\n\tnofog%s\n\tallowCompress\n\tcull none\n\t{\n\t\tmap sprites/%s/spr%i%i%i.tga\n\t\tblendFunc %s %s\n%s\t}\n}\n", shaderName, i + 1, nomipmap ? "\n\tnomipmap" : "", dir, b, c, d, srcBlend, dstBlend, extras );
 		}
 		trap_FS_Write( str, strlen( str ), f );
 	}
@@ -1406,11 +1406,11 @@ void CG_InitFlameChunks( void ) {
 #endif
 
 	for ( i = 0; i < NUM_FLAME_SPRITES; i++ ) {
-		Com_sprintf( filename, MAX_QPATH, "flamethrowerFire%i", i + 1 );
+		snprintf( filename, MAX_QPATH, "flamethrowerFire%i", i + 1 );
 		flameShaders[i] = trap_R_RegisterShader( filename );
 	}
 	for ( i = 0; i < NUM_NOZZLE_SPRITES; i++ ) {
-		Com_sprintf( filename, MAX_QPATH, "nozzleFlame%i", i + 1 );
+		snprintf( filename, MAX_QPATH, "nozzleFlame%i", i + 1 );
 		nozzleShaders[i] = trap_R_RegisterShader( filename );
 	}
 	initFlameShaders = qfalse;

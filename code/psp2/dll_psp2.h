@@ -40,6 +40,10 @@ typedef struct sysfuncs_s
 	int (*pfnSysFprintf)(FILE*, const char*, ...);
 	size_t (*pfnSysFread)(void*, size_t, size_t, FILE*);
 	size_t (*pfnSysFwrite)(const void*, size_t, size_t, FILE*);
+	// sprintf
+	int (*pfnSprintf)(char*, const char*, ...);
+	int (*pfnSnprintf)(char*, int, const char*, ...);
+	int (*pfnVsnprintf)(char*, int, const char*, va_list);
 } sysfuncs_t;
 
 void *dlsym(void *handle, const char *symbol );

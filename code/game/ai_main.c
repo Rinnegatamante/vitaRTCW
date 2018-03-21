@@ -1051,9 +1051,9 @@ int BotInitLibrary( void ) {
 	char buf[144];
 
 	//set the maxclients and maxentities library variables before calling BotSetupLibrary
-	Com_sprintf( buf, sizeof( buf ), "%d", level.maxclients );
+	snprintf( buf, sizeof( buf ), "%d", level.maxclients );
 	trap_BotLibVarSet( "maxclients", buf );
-	Com_sprintf( buf, sizeof( buf ), "%d", MAX_GENTITIES );
+	snprintf( buf, sizeof( buf ), "%d", MAX_GENTITIES );
 	trap_BotLibVarSet( "maxentities", buf );
 	//bsp checksum
 	trap_Cvar_VariableStringBuffer( "sv_mapChecksum", buf, sizeof( buf ) );

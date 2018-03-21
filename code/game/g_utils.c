@@ -72,7 +72,7 @@ const char *BuildShaderStateConfig( void ) {
 
 	memset( buff, 0, MAX_STRING_CHARS );
 	for ( i = 0; i < remapCount; i++ ) {
-		Com_sprintf( out, ( MAX_QPATH * 2 ) + 5, "%s=%s:%5.2f@", remappedShaders[i].oldShader, remappedShaders[i].newShader, remappedShaders[i].timeOffset );
+		snprintf( out, ( MAX_QPATH * 2 ) + 5, "%s=%s:%5.2f@", remappedShaders[i].oldShader, remappedShaders[i].newShader, remappedShaders[i].timeOffset );
 		Q_strcat( buff, sizeof( buff ), out );
 	}
 	return buff;
@@ -341,7 +341,7 @@ char    *vtos( const vec3_t v ) {
 	s = str[index];
 	index = ( index + 1 ) & 7;
 
-	Com_sprintf( s, 32, "(%i %i %i)", (int)v[0], (int)v[1], (int)v[2] );
+	snprintf( s, 32, "(%i %i %i)", (int)v[0], (int)v[1], (int)v[2] );
 
 	return s;
 }
@@ -354,7 +354,7 @@ char    *vtosf( const vec3_t v ) {
 	s = str[index];
 	index = ( index + 1 ) & 7;
 
-	Com_sprintf( s, 64, "(%f %f %f)", v[0], v[1], v[2] );
+	snprintf( s, 64, "(%f %f %f)", v[0], v[1], v[2] );
 
 	return s;
 }

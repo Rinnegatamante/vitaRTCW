@@ -189,7 +189,7 @@ void BotSayTeamOrder( bot_state_t *bs, int toclient ) {
 		//don't show the message just put it in the console message queue
 		trap_BotGetChatMessage( bs->cs, buf, sizeof( buf ) );
 		ClientName( bs->client, name, sizeof( name ) );
-		Com_sprintf( teamchat, sizeof( teamchat ), "(%s): %s", name, buf );
+		snprintf( teamchat, sizeof( teamchat ), "(%s): %s", name, buf );
 		trap_BotQueueConsoleMessage( bs->cs, CMS_CHAT, teamchat );
 	} else {
 		trap_BotEnterChat( bs->cs, bs->client, CHAT_TEAM );

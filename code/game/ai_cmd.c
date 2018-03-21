@@ -418,7 +418,7 @@ int BotAddressedToBot( bot_state_t *bs, bot_match_t *match ) {
 				break;
 			}
 		}
-		//Com_sprintf(buf, sizeof(buf), "not addressed to me but %s", addressedto);
+		//snprintf(buf, sizeof(buf), "not addressed to me but %s", addressedto);
 		//trap_EA_Say(bs->client, buf);
 		return qfalse;
 	} else {
@@ -975,7 +975,7 @@ void BotMatch_CheckPoint( bot_state_t *bs, bot_match_t *match ) {
 	bs->checkpoints = cp;
 	//
 	if ( BotAddressedToBot( bs, match ) ) {
-		Com_sprintf( buf, sizeof( buf ), "%1.0f %1.0f %1.0f", cp->goal.origin[0],
+		snprintf( buf, sizeof( buf ), "%1.0f %1.0f %1.0f", cp->goal.origin[0],
 					 cp->goal.origin[1],
 					 cp->goal.origin[2] );
 
@@ -1608,7 +1608,7 @@ int BotMatchMessage( bot_state_t *bs, char *message ) {
 	{
 		//NOTE: eliza chats will catch this
 		//BotMatchVariable(&match, NETNAME, netname);
-		//Com_sprintf(buf, sizeof(buf), "heya %s", netname);
+		//snprintf(buf, sizeof(buf), "heya %s", netname);
 		//EA_Say(bs->client, buf);
 		break;
 	}
