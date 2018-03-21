@@ -69,7 +69,7 @@ void DeathmatchScoreboardMessage( gentity_t *ent ) {
 		} else {
 			ping = cl->ps.ping < 999 ? cl->ps.ping : 999;
 		}
-		Com_sprintf( entry, sizeof( entry ),
+		snprintf( entry, sizeof( entry ),
 					 " %i %i %i %i %i %i", level.sortedClients[i],
 					 cl->ps.persistant[PERS_SCORE], ping, ( level.time - cl->pers.enterTime ) / 60000,
 					 scoreFlags, g_entities[level.sortedClients[i]].s.powerups );
@@ -965,16 +965,16 @@ void G_Say( gentity_t *ent, gentity_t *target, int mode, const char *chatText ) 
 	default:
 	case SAY_ALL:
 		G_LogPrintf( "say: %s: %s\n", ent->client->pers.netname, chatText );
-		Com_sprintf( name, sizeof( name ), "%s%c%c: ", ent->client->pers.netname, Q_COLOR_ESCAPE, COLOR_WHITE );
+		snprintf( name, sizeof( name ), "%s%c%c: ", ent->client->pers.netname, Q_COLOR_ESCAPE, COLOR_WHITE );
 		color = COLOR_GREEN;
 		break;
 	case SAY_TEAM:
 		G_LogPrintf( "sayteam: %s: %s\n", ent->client->pers.netname, chatText );
 		if ( Team_GetLocationMsg( ent, location, sizeof( location ) ) ) {
-			Com_sprintf( name, sizeof( name ), "(%s%c%c) (%s): ",
+			snprintf( name, sizeof( name ), "(%s%c%c) (%s): ",
 						 ent->client->pers.netname, Q_COLOR_ESCAPE, COLOR_WHITE, location );
 		} else {
-			Com_sprintf( name, sizeof( name ), "(%s%c%c): ",
+			snprintf( name, sizeof( name ), "(%s%c%c): ",
 						 ent->client->pers.netname, Q_COLOR_ESCAPE, COLOR_WHITE );
 		}
 		color = COLOR_CYAN;
@@ -983,9 +983,9 @@ void G_Say( gentity_t *ent, gentity_t *target, int mode, const char *chatText ) 
 		if (target && target->inuse && target->client && g_gametype.integer >= GT_TEAM &&
 			 target->client->sess.sessionTeam == ent->client->sess.sessionTeam &&
 			 Team_GetLocationMsg( ent, location, sizeof( location ) ) ) {
-			Com_sprintf( name, sizeof( name ), "[%s%c%c] (%s): ", ent->client->pers.netname, Q_COLOR_ESCAPE, COLOR_WHITE, location );
+			snprintf( name, sizeof( name ), "[%s%c%c] (%s): ", ent->client->pers.netname, Q_COLOR_ESCAPE, COLOR_WHITE, location );
 		} else {
-			Com_sprintf( name, sizeof( name ), "[%s%c%c]: ", ent->client->pers.netname, Q_COLOR_ESCAPE, COLOR_WHITE );
+			snprintf( name, sizeof( name ), "[%s%c%c]: ", ent->client->pers.netname, Q_COLOR_ESCAPE, COLOR_WHITE );
 		}
 		color = COLOR_MAGENTA;
 		break;
@@ -993,10 +993,10 @@ void G_Say( gentity_t *ent, gentity_t *target, int mode, const char *chatText ) 
 	case SAY_LIMBO:
 		G_LogPrintf( "sayteam: %s: %s\n", ent->client->pers.netname, chatText );
 		if ( Team_GetLocationMsg( ent, location, sizeof( location ) ) ) {
-			Com_sprintf( name, sizeof( name ), "(%s%c%c) (%s): ",
+			snprintf( name, sizeof( name ), "(%s%c%c) (%s): ",
 						 ent->client->pers.netname, Q_COLOR_ESCAPE, COLOR_WHITE, location );
 		} else {
-			Com_sprintf( name, sizeof( name ), "(%s%c%c): ",
+			snprintf( name, sizeof( name ), "(%s%c%c): ",
 						 ent->client->pers.netname, Q_COLOR_ESCAPE, COLOR_WHITE );
 		}
 		color = COLOR_CYAN;
@@ -1206,7 +1206,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		return;
 	}
 	
-	Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %s", arg1, arg2 );
+	snprintf( level.voteString, sizeof( level.voteString ), "%s %s", arg1, arg2 );
 
 	trap_SendServerCommand( -1, va( "print \"%s called a vote.\n\"", ent->client->pers.netname ) );
 

@@ -343,7 +343,7 @@ COM_BeginParseSession
 void COM_BeginParseSession( const char *name ) {
 	com_lines = 1;
 	com_tokenline = 0;
-	Com_sprintf( com_parsename, sizeof( com_parsename ), "%s", name );
+	snprintf( com_parsename, sizeof( com_parsename ), "%s", name );
 }
 
 /*
@@ -1102,6 +1102,7 @@ int Q_CountChar(const char *string, char tocount)
 	return count;
 }
 
+#ifndef __PSP2__
 int QDECL Com_sprintf(char *dest, int size, const char *fmt, ...)
 {
 	int len;
@@ -1112,10 +1113,11 @@ int QDECL Com_sprintf(char *dest, int size, const char *fmt, ...)
 	va_end( argptr );
 
 	if(len >= size)
-		Com_Printf("Com_sprintf: Output length %d too short, requires %d bytes.\n", size, len + 1);
+		Com_Printf("snprintf: Output length %d too short, requires %d bytes.\n", size, len + 1);
 	
 	return len;
 }
+#endif
 
 // Ridah, ripped from l_bsp.c
 int Q_strncasecmp( char *s1, char *s2, int n ) {
@@ -1544,7 +1546,7 @@ void Info_SetValueForKey( char *s, const char *key, const char *value ) {
 		return;
 	}
 
-	Com_sprintf( newi, sizeof( newi ), "\\%s\\%s", key, value );
+	snprintf( newi, sizeof( newi ), "\\%s\\%s", key, value );
 
 	if ( strlen( newi ) + strlen( s ) >= MAX_INFO_STRING ) {
 		Com_Printf( "Info string length exceeded\n" );
@@ -1583,7 +1585,7 @@ void Info_SetValueForKey_Big( char *s, const char *key, const char *value ) {
 	if (!value)
 		return;
 
-	Com_sprintf( newi, sizeof( newi ), "\\%s\\%s", key, value );
+	snprintf( newi, sizeof( newi ), "\\%s\\%s", key, value );
 
 	if ( strlen( newi ) + strlen( s ) >= BIG_INFO_STRING ) {
 		Com_Printf( "BIG Info string length exceeded\n" );

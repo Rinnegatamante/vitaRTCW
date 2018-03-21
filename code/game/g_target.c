@@ -247,7 +247,7 @@ void SP_target_speaker( gentity_t *ent ) {
 	// don't worry, if the script isn't found, it'll default back to
 	// .wav on the client-side
 	//if (!strstr( s, ".wav" )) {
-	//	Com_sprintf (buffer, sizeof(buffer), "%s.wav", s );
+	//	snprintf (buffer, sizeof(buffer), "%s.wav", s );
 	//} else {
 	Q_strncpyz( buffer, s, sizeof( buffer ) );
 	//}

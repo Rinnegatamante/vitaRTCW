@@ -53,13 +53,13 @@ static void CG_DrawClientScore( int x, int y, score_t *score, float *color, floa
 	if ( ci->botSkill > 0 && ci->botSkill <= 5 ) {
 		CG_DrawPic( 0, y - 8, 32, 32, cgs.media.botSkillShaders[ ci->botSkill - 1 ] );
 	} else if ( ci->handicap < 100 ) {
-		Com_sprintf( string, sizeof( string ), "%i", ci->handicap );
+		snprintf( string, sizeof( string ), "%i", ci->handicap );
 		CG_DrawSmallStringColor( 8, y, string, color );
 	}
 
 	// draw the wins / losses
 	if ( cgs.gametype == GT_TOURNAMENT ) {
-		Com_sprintf( string, sizeof( string ), "%i/%i", ci->wins, ci->losses );
+		snprintf( string, sizeof( string ), "%i/%i", ci->wins, ci->losses );
 		CG_DrawSmallStringColor( x + SCOREBOARD_WIDTH + 2, y, string, color );
 	}
 
@@ -80,13 +80,13 @@ static void CG_DrawClientScore( int x, int y, score_t *score, float *color, floa
 
 	// draw the score line
 	if ( score->ping == -1 ) {
-		Com_sprintf( string, sizeof( string ),
+		snprintf( string, sizeof( string ),
 					 "connecting     %s", ci->name );
 	} else if ( ci->team == TEAM_SPECTATOR ) {
-		Com_sprintf( string, sizeof( string ),
+		snprintf( string, sizeof( string ),
 					 "SPECT %4i %4i %s", score->ping, score->time, ci->name );
 	} else {
-		Com_sprintf( string, sizeof( string ),
+		snprintf( string, sizeof( string ),
 					 "%5i %4i %4i %s", score->score, score->ping, score->time, ci->name );
 	}
 

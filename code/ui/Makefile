@@ -2,11 +2,11 @@ TARGET   := ui
 SOURCES  := .
 CPPSOURCES := 
 INCLUDES := ../renderer ../qcommon ../botlib ../client ../server ../psp2 ../sys ../splines ../game
+SOURCE_EXTRA := ../psp2/psp2_dll_hacks.c
 
-LIBS = -lSceCommonDialog_stub -lSceAudio_stub -lSceLibKernel_stub \
-	-lSceNet_stub -lSceNetCtl_stub -lSceDisplay_stub -lSceGxm_stub \
-	-lSceSysmodule_stub -lSceCtrl_stub -lSceTouch_stub -lSceMotion_stub -lSceAppMgr_stub \
-	-lSceAppUtil_stub -lScePgf_stub -lSceRtc_stub -lScePower_stub -lm -lc	
+LIBS =  -lc -lm -lSceNet_stub_weak -lSceNetCtl_stub_weak \
+       -lSceSysmem_stub_weak -lSceSysmodule_stub_weak -lSceIofilemgr_stub_weak \
+       -lSceLibKernel_stub_weak -lSceKernelThreadMgr_stub_weak -lSceKernelModulemgr_stub_weak
 
 CFILES   := $(foreach dir,$(SOURCES), $(wildcard $(dir)/*.c)) $(SOURCE_EXTRA)
 CPPFILES   := $(foreach dir,$(CPPSOURCES), $(wildcard $(dir)/*.cpp))
@@ -20,10 +20,10 @@ CC      = $(PREFIX)-gcc
 CXX      = $(PREFIX)-g++
 CFLAGS  = $(INCLUDE) -D__PSP2__ -D__FLOAT_WORD_ORDER=1 -D__GNU__ -DRELEASE \
         -DUSE_ICON -DARCH_STRING=\"arm\" -DUI -DUSE_CODEC_VORBIS \
-        -DDEFAULT_BASEDIR=\"ux0:/data/iortcw\" -fno-lto \
+        -fno-lto \
         -DPRODUCT_VERSION=\"1.36_GIT_ba68b99c-2018-01-23\" -DHAVE_VM_COMPILED=true \
         -mfpu=neon -mcpu=cortex-a9 -fsigned-char -nostartfiles \
-        -Wl,-q -O3 -g -ffast-math -fno-short-enums
+        -Wl,-q -O3 -g -ffast-math -fno-short-enums -include "../psp2/psp2_dll_defs.h"
 CXXFLAGS  = $(CFLAGS) -fno-exceptions -std=gnu++11 -fpermissive
 ASFLAGS = $(CFLAGS)
 

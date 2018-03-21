@@ -380,7 +380,7 @@ static void CG_SoundLoadSoundFiles( void ) {
 	char *token;
 
 	// scan for sound files
-	Com_sprintf( filename, MAX_QPATH, "sound/scripts/filelist.txt" );
+	snprintf( filename, MAX_QPATH, "sound/scripts/filelist.txt" );
 	len = trap_FS_FOpenFile( filename, &f, FS_READ );
 	if ( len <= 0 ) {
 		CG_Printf( S_COLOR_RED "WARNING: no sound files found (filelist.txt not found in sound/scripts)\n" );
@@ -401,7 +401,7 @@ static void CG_SoundLoadSoundFiles( void ) {
 		if ( !token[0] ) {
 			break;
 		}
-		Com_sprintf( soundFiles[numSounds++], MAX_QPATH, "%s", token );
+		snprintf( soundFiles[numSounds++], MAX_QPATH, "%s", token );
 	}
 
 	if ( !numSounds ) {
@@ -412,7 +412,7 @@ static void CG_SoundLoadSoundFiles( void ) {
 	// load and parse sound files
 	for ( i = 0; i < numSounds; i++ )
 	{
-		Com_sprintf( filename, sizeof( filename ), "sound/scripts/%s", soundFiles[i] );
+		snprintf( filename, sizeof( filename ), "sound/scripts/%s", soundFiles[i] );
 		CG_Printf( "...loading '%s'\n", filename );
 		len = trap_FS_FOpenFile( filename, &f, FS_READ );
 		if ( len <= 0 ) {

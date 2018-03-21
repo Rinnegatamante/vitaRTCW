@@ -30,6 +30,8 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef _QCOMMON_H_
 #define _QCOMMON_H_
 
+#define DEFAULT_BASEDIR "ux0:/data/iortcw"
+
 #include "../qcommon/cm_public.h"
 
 //Ignore __attribute__ on non-gcc platforms

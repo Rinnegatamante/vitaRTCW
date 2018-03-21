@@ -752,7 +752,7 @@ static void CG_LoadPickupNames( void ) {
 	int len, i;
 	char *token;
 
-	Com_sprintf( filename, MAX_QPATH, "text/pickupnames.txt" );
+	snprintf( filename, MAX_QPATH, "text/pickupnames.txt" );
 	len = trap_FS_FOpenFile( filename, &f, FS_READ );
 	if ( len <= 0 ) {
 		CG_Printf( S_COLOR_RED "WARNING: pickup name file (pickupnames.txt not found in main/text)\n" );
@@ -776,12 +776,12 @@ static void CG_LoadPickupNames( void ) {
 		}
 		if ( !Q_stricmp( token, "---" ) ) {   // no name.  use hardcoded value
 			if ( bg_itemlist[i].pickup_name && strlen( bg_itemlist[i].pickup_name ) ) {
-				Com_sprintf( cgs.itemPrintNames[i], MAX_QPATH, "%s", bg_itemlist[ i ].pickup_name );
+				snprintf( cgs.itemPrintNames[i], MAX_QPATH, "%s", bg_itemlist[ i ].pickup_name );
 			} else {
 				cgs.itemPrintNames[i][0] = 0;
 			}
 		} else {
-			Com_sprintf( cgs.itemPrintNames[i], MAX_QPATH, "%s", token );
+			snprintf( cgs.itemPrintNames[i], MAX_QPATH, "%s", token );
 		}
 	}
 }
@@ -795,7 +795,7 @@ static void CG_LoadTranslationStrings( void ) {
 	int len, i, numStrings;
 	char *token;
 
-	Com_sprintf( filename, MAX_QPATH, "text/strings.txt" );
+	snprintf( filename, MAX_QPATH, "text/strings.txt" );
 	len = trap_FS_FOpenFile( filename, &f, FS_READ );
 	if ( len <= 0 ) {
 		CG_Printf( S_COLOR_RED "WARNING: string translation file (strings.txt not found in main/text)\n" );
@@ -902,45 +902,45 @@ static void CG_RegisterSounds( void ) {
 	cgs.media.underWaterSound = trap_S_RegisterSound( "sound/world/underwater03.wav" );
 
 	for ( i = 0 ; i < 4 ; i++ ) {
-		Com_sprintf( name, sizeof( name ), "sound/player/footsteps/step%i.wav", i + 1 );
+		snprintf( name, sizeof( name ), "sound/player/footsteps/step%i.wav", i + 1 );
 		cgs.media.footsteps[FOOTSTEP_NORMAL][i] = trap_S_RegisterSound( name );
 
-		Com_sprintf( name, sizeof( name ), "sound/player/footsteps/boot%i.wav", i + 1 );
+		snprintf( name, sizeof( name ), "sound/player/footsteps/boot%i.wav", i + 1 );
 		cgs.media.footsteps[FOOTSTEP_BOOT][i] = trap_S_RegisterSound( name );
 
-		Com_sprintf( name, sizeof( name ), "sound/player/footsteps/flesh%i.wav", i + 1 );
+		snprintf( name, sizeof( name ), "sound/player/footsteps/flesh%i.wav", i + 1 );
 		cgs.media.footsteps[FOOTSTEP_FLESH][i] = trap_S_RegisterSound( name );
 
-		Com_sprintf( name, sizeof( name ), "sound/player/footsteps/mech%i.wav", i + 1 );
+		snprintf( name, sizeof( name ), "sound/player/footsteps/mech%i.wav", i + 1 );
 		cgs.media.footsteps[FOOTSTEP_MECH][i] = trap_S_RegisterSound( name );
 
-		Com_sprintf( name, sizeof( name ), "sound/player/footsteps/energy%i.wav", i + 1 );
+		snprintf( name, sizeof( name ), "sound/player/footsteps/energy%i.wav", i + 1 );
 		cgs.media.footsteps[FOOTSTEP_ENERGY][i] = trap_S_RegisterSound( name );
 
-		Com_sprintf( name, sizeof( name ), "sound/player/footsteps/splash%i.wav", i + 1 );
+		snprintf( name, sizeof( name ), "sound/player/footsteps/splash%i.wav", i + 1 );
 		cgs.media.footsteps[FOOTSTEP_SPLASH][i] = trap_S_RegisterSound( name );
 
-		Com_sprintf( name, sizeof( name ), "sound/player/footsteps/clank%i.wav", i + 1 );
+		snprintf( name, sizeof( name ), "sound/player/footsteps/clank%i.wav", i + 1 );
 		cgs.media.footsteps[FOOTSTEP_METAL][i] = trap_S_RegisterSound( name );
 
 
 		// (SA) Wolf footstep sound registration
-		Com_sprintf( name, sizeof( name ), "sound/player/footsteps/wood%i.wav", i + 1 );
+		snprintf( name, sizeof( name ), "sound/player/footsteps/wood%i.wav", i + 1 );
 		cgs.media.footsteps[FOOTSTEP_WOOD][i] = trap_S_RegisterSound( name );
 
-		Com_sprintf( name, sizeof( name ), "sound/player/footsteps/grass%i.wav", i + 1 );
+		snprintf( name, sizeof( name ), "sound/player/footsteps/grass%i.wav", i + 1 );
 		cgs.media.footsteps[FOOTSTEP_GRASS][i] = trap_S_RegisterSound( name );
 
-		Com_sprintf( name, sizeof( name ), "sound/player/footsteps/gravel%i.wav", i + 1 );
+		snprintf( name, sizeof( name ), "sound/player/footsteps/gravel%i.wav", i + 1 );
 		cgs.media.footsteps[FOOTSTEP_GRAVEL][i] = trap_S_RegisterSound( name );
 
-		Com_sprintf( name, sizeof( name ), "sound/player/footsteps/roof%i.wav", i + 1 );
+		snprintf( name, sizeof( name ), "sound/player/footsteps/roof%i.wav", i + 1 );
 		cgs.media.footsteps[FOOTSTEP_ROOF][i] = trap_S_RegisterSound( name );
 
-		Com_sprintf( name, sizeof( name ), "sound/player/footsteps/snow%i.wav", i + 1 );
+		snprintf( name, sizeof( name ), "sound/player/footsteps/snow%i.wav", i + 1 );
 		cgs.media.footsteps[FOOTSTEP_SNOW][i] = trap_S_RegisterSound( name );
 
-		Com_sprintf( name, sizeof( name ), "sound/player/footsteps/carpet%i.wav", i + 1 );    //----(SA)
+		snprintf( name, sizeof( name ), "sound/player/footsteps/carpet%i.wav", i + 1 );    //----(SA)
 		cgs.media.footsteps[FOOTSTEP_CARPET][i] = trap_S_RegisterSound( name );
 	}
 
@@ -1402,7 +1402,7 @@ static void CG_RegisterGraphics( void ) {
 
 	for ( i = 0; i < MAX_LOCKER_DEBRIS; i++ )
 	{
-		Com_sprintf( name, sizeof( name ), "models/mapobjects/debris/personal%i.md3", i + 1 );
+		snprintf( name, sizeof( name ), "models/mapobjects/debris/personal%i.md3", i + 1 );
 		cgs.media.shardJunk[i] = trap_R_RegisterModel( name );
 	}
 
@@ -1459,9 +1459,9 @@ static void CG_RegisterGraphics( void ) {
 
 	for ( i = 0 ; i < 5 ; i++ ) {
 		char name[32];
-		//Com_sprintf( name, sizeof(name), "textures/decals/blood%i", i+1 );
+		//snprintf( name, sizeof(name), "textures/decals/blood%i", i+1 );
 		//cgs.media.bloodMarkShaders[i] = trap_R_RegisterShader( name );
-		Com_sprintf( name, sizeof( name ), "blood_dot%i", i + 1 );
+		snprintf( name, sizeof( name ), "blood_dot%i", i + 1 );
 		cgs.media.bloodDotShaders[i] = trap_R_RegisterShader( name );
 	}
 
@@ -1474,7 +1474,7 @@ static void CG_RegisterGraphics( void ) {
 		vec3_t mins, maxs;
 		int j;
 
-		Com_sprintf( name, sizeof( name ), "*%i", i );
+		snprintf( name, sizeof( name ), "*%i", i );
 		cgs.inlineDrawModel[i] = trap_R_RegisterModel( name );
 		trap_R_ModelBounds( cgs.inlineDrawModel[i], mins, maxs );
 		for ( j = 0 ; j < 3 ; j++ ) {

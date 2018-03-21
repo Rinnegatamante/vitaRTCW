@@ -1088,7 +1088,7 @@ static void UI_LoadTranslationStrings( void ) {
 	int len, i, numStrings;
 	char *token;
 
-	Com_sprintf( filename, MAX_QPATH, "text/strings.txt" );
+	snprintf( filename, MAX_QPATH, "text/strings.txt" );
 	len = trap_FS_FOpenFile( filename, &f, FS_READ );
 	if ( len <= 0 ) {
 //		CG_Printf( S_COLOR_RED "WARNING: string translation file (strings.txt not found in main/text)\n" );
@@ -3212,7 +3212,7 @@ static qboolean UI_NetSource_HandleKey(int flags, float *special, int key) {
 		
 			while(ui_netSource.integer >= UIAS_GLOBAL1 && ui_netSource.integer <= UIAS_GLOBAL5)
 			{
-				Com_sprintf(cvarname, sizeof(cvarname), "sv_master%d", ui_netSource.integer - UIAS_GLOBAL0);
+				snprintf(cvarname, sizeof(cvarname), "sv_master%d", ui_netSource.integer - UIAS_GLOBAL0);
 				trap_Cvar_VariableStringBuffer(cvarname, masterstr, sizeof(masterstr));
 				if(*masterstr)
 					break;
@@ -3916,7 +3916,7 @@ static void UI_LoadDemos( void ) {
 	if(protocolLegacy == protocol)
 		protocolLegacy = 0;
 
-	Com_sprintf(demoExt, sizeof(demoExt), ".%s%d", DEMOEXT, protocol);
+	snprintf(demoExt, sizeof(demoExt), ".%s%d", DEMOEXT, protocol);
 	uiInfo.demoCount = trap_FS_GetFileList("demos", demoExt, demolist, ARRAY_LEN(demolist));
 	
 	demoname = demolist;
@@ -3938,7 +3938,7 @@ static void UI_LoadDemos( void ) {
 		{
 			if(protocolLegacy > 0 && uiInfo.demoCount < MAX_DEMOS)
 			{
-				Com_sprintf(demoExt, sizeof(demoExt), ".%s%d", DEMOEXT, protocolLegacy);
+				snprintf(demoExt, sizeof(demoExt), ".%s%d", DEMOEXT, protocolLegacy);
 				uiInfo.demoCount += trap_FS_GetFileList("demos", demoExt, demolist, ARRAY_LEN(demolist));
 				demoname = demolist;
 		}
@@ -4034,7 +4034,7 @@ static void UI_StartSkirmish( qboolean next ) {
 	trap_Cvar_Set( "g_blueTeam", UI_Cvar_VariableString( "ui_opponentName" ) );
 
 	if ( trap_Cvar_VariableValue( "ui_recordSPDemo" ) ) {
-		Com_sprintf( buff, MAX_STRING_CHARS, "%s_%i", uiInfo.mapList[ui_currentMap.integer].mapLoadName, g );
+		snprintf( buff, MAX_STRING_CHARS, "%s_%i", uiInfo.mapList[ui_currentMap.integer].mapLoadName, g );
 		trap_Cvar_Set( "ui_recordSPDemoName", buff );
 	}
 
@@ -4042,19 +4042,19 @@ static void UI_StartSkirmish( qboolean next ) {
 
 	if ( g == GT_TOURNAMENT ) {
 		trap_Cvar_Set( "sv_maxClients", "2" );
-		Com_sprintf( buff, sizeof( buff ), "wait ; addbot %s %f " ", %i \n", uiInfo.mapList[ui_currentMap.integer].opponentName, skill, delay );
+		snprintf( buff, sizeof( buff ), "wait ; addbot %s %f " ", %i \n", uiInfo.mapList[ui_currentMap.integer].opponentName, skill, delay );
 		trap_Cmd_ExecuteText( EXEC_APPEND, buff );
 	} else {
 		temp = uiInfo.mapList[ui_currentMap.integer].teamMembers * 2;
 		trap_Cvar_Set( "sv_maxClients", va( "%d", temp ) );
 		for ( i = 0; i < uiInfo.mapList[ui_currentMap.integer].teamMembers; i++ ) {
-			Com_sprintf( buff, sizeof( buff ), "addbot %s %f %s %i %s\n", UI_AIFromName( uiInfo.teamList[k].teamMembers[i] ), skill, ( g == GT_FFA ) ? "" : "Blue", delay, uiInfo.teamList[k].teamMembers[i] );
+			snprintf( buff, sizeof( buff ), "addbot %s %f %s %i %s\n", UI_AIFromName( uiInfo.teamList[k].teamMembers[i] ), skill, ( g == GT_FFA ) ? "" : "Blue", delay, uiInfo.teamList[k].teamMembers[i] );
 			trap_Cmd_ExecuteText( EXEC_APPEND, buff );
 			delay += 500;
 		}
 		k = UI_TeamIndexFromName( UI_Cvar_VariableString( "ui_teamName" ) );
 		for ( i = 0; i < uiInfo.mapList[ui_currentMap.integer].teamMembers - 1; i++ ) {
-			Com_sprintf( buff, sizeof( buff ), "addbot %s %f %s %i %s\n", UI_AIFromName( uiInfo.teamList[k].teamMembers[i] ), skill, ( g == GT_FFA ) ? "" : "Red", delay, uiInfo.teamList[k].teamMembers[i] );
+			snprintf( buff, sizeof( buff ), "addbot %s %f %s %i %s\n", UI_AIFromName( uiInfo.teamList[k].teamMembers[i] ), skill, ( g == GT_FFA ) ? "" : "Red", delay, uiInfo.teamList[k].teamMembers[i] );
 			trap_Cmd_ExecuteText( EXEC_APPEND, buff );
 			delay += 500;
 		}
@@ -4636,20 +4636,20 @@ static void UI_RunMenuScript( char **args ) {
 				int bot = trap_Cvar_VariableValue( va( "ui_blueteam%i", i + 1 ) );
 				if ( bot > 1 ) {
 					if ( ui_actualNetGameType.integer >= GT_TEAM ) {
-						Com_sprintf( buff, sizeof( buff ), "addbot %s %f %s\n", uiInfo.characterList[bot - 2].name, skill, "Blue" );
+						snprintf( buff, sizeof( buff ), "addbot %s %f %s\n", uiInfo.characterList[bot - 2].name, skill, "Blue" );
 					} else {
 						// NERVE - SMF - no bots in wolf multiplayer
-						//						Com_sprintf( buff, sizeof(buff), "addbot %s %f \n", UI_GetBotNameByNumber(bot-2), skill);
+						//						snprintf( buff, sizeof(buff), "addbot %s %f \n", UI_GetBotNameByNumber(bot-2), skill);
 					}
 					trap_Cmd_ExecuteText( EXEC_APPEND, buff );
 				}
 				bot = trap_Cvar_VariableValue( va( "ui_redteam%i", i + 1 ) );
 				if ( bot > 1 ) {
 					if ( ui_actualNetGameType.integer >= GT_TEAM ) {
-						Com_sprintf( buff, sizeof( buff ), "addbot %s %f %s\n", uiInfo.characterList[bot - 2].name, skill, "Red" );
+						snprintf( buff, sizeof( buff ), "addbot %s %f %s\n", uiInfo.characterList[bot - 2].name, skill, "Red" );
 					} else {
 						// NERVE - SMF - no bots in wolf multiplayer
-						//						Com_sprintf( buff, sizeof(buff), "addbot %s %f \n", UI_GetBotNameByNumber(bot-2), skill);
+						//						snprintf( buff, sizeof(buff), "addbot %s %f \n", UI_GetBotNameByNumber(bot-2), skill);
 					}
 					trap_Cmd_ExecuteText( EXEC_APPEND, buff );
 				}
@@ -5004,7 +5004,7 @@ static void UI_RunMenuScript( char **args ) {
 			if ( String_Parse( args, &orders ) ) {
 				int selectedPlayer = trap_Cvar_VariableValue( "cg_selectedPlayer" );
 				if ( selectedPlayer < uiInfo.myTeamCount ) {
-					Com_sprintf( buff, sizeof( buff ), orders, uiInfo.teamClientNums[selectedPlayer] );
+					snprintf( buff, sizeof( buff ), orders, uiInfo.teamClientNums[selectedPlayer] );
 					trap_Cmd_ExecuteText( EXEC_APPEND, buff );
 					trap_Cmd_ExecuteText( EXEC_APPEND, "\n" );
 				} else {
@@ -5013,7 +5013,7 @@ static void UI_RunMenuScript( char **args ) {
 						if (uiInfo.playerNumber == uiInfo.teamClientNums[i]) {
 							continue;
 						}
-						Com_sprintf( buff, sizeof( buff ), orders, uiInfo.teamClientNums[i] );
+						snprintf( buff, sizeof( buff ), orders, uiInfo.teamClientNums[i] );
 						trap_Cmd_ExecuteText( EXEC_APPEND, buff );
 						trap_Cmd_ExecuteText( EXEC_APPEND, "\n" );
 					}
@@ -5041,7 +5041,7 @@ static void UI_RunMenuScript( char **args ) {
 			if ( String_Parse( args, &orders ) ) {
 				int selectedPlayer = trap_Cvar_VariableValue( "cg_selectedPlayer" );
 				if ( selectedPlayer < uiInfo.myTeamCount ) {
-					Com_sprintf( buff, sizeof( buff ), orders, uiInfo.teamClientNums[selectedPlayer] );
+					snprintf( buff, sizeof( buff ), orders, uiInfo.teamClientNums[selectedPlayer] );
 					trap_Cmd_ExecuteText( EXEC_APPEND, buff );
 					trap_Cmd_ExecuteText( EXEC_APPEND, "\n" );
 				}
@@ -5552,7 +5552,7 @@ static int UI_GetServerStatusInfo( const char *serverAddress, serverStatusInfo_t
 				}
 				*p++ = '\0';
 				name = p;
-				Com_sprintf( &info->pings[len], sizeof( info->pings ) - len, "%d", i );
+				snprintf( &info->pings[len], sizeof( info->pings ) - len, "%d", i );
 				info->lines[info->numLines][0] = &info->pings[len];
 				len += strlen( &info->pings[len] ) + 1;
 				info->lines[info->numLines][1] = score;
@@ -5639,7 +5639,7 @@ static void UI_BuildFindPlayerList( qboolean force ) {
 		trap_LAN_ServerStatus( NULL, NULL, 0 );
 		//
 		uiInfo.numFoundPlayerServers = 1;
-		Com_sprintf( uiInfo.foundPlayerServerNames[uiInfo.numFoundPlayerServers - 1],
+		snprintf( uiInfo.foundPlayerServerNames[uiInfo.numFoundPlayerServers - 1],
 					 sizeof( uiInfo.foundPlayerServerNames[uiInfo.numFoundPlayerServers - 1] ),
 					 "searching %d...", uiInfo.pendingServerStatus.num );
 		numFound = 0;
@@ -5679,7 +5679,7 @@ static void UI_BuildFindPlayerList( qboolean force ) {
 						}
 					}
 				}
-				Com_sprintf( uiInfo.foundPlayerServerNames[uiInfo.numFoundPlayerServers - 1],
+				snprintf( uiInfo.foundPlayerServerNames[uiInfo.numFoundPlayerServers - 1],
 							 sizeof( uiInfo.foundPlayerServerNames[uiInfo.numFoundPlayerServers - 1] ),
 							 "searching %d/%d...", uiInfo.pendingServerStatus.num, numFound );
 				// retrieved the server status so reuse this spot
@@ -5706,7 +5706,7 @@ static void UI_BuildFindPlayerList( qboolean force ) {
 				Q_strncpyz( uiInfo.pendingServerStatus.server[i].name, Info_ValueForKey( infoString, "hostname" ), sizeof( uiInfo.pendingServerStatus.server[0].name ) );
 				uiInfo.pendingServerStatus.server[i].valid = qtrue;
 				uiInfo.pendingServerStatus.num++;
-				Com_sprintf( uiInfo.foundPlayerServerNames[uiInfo.numFoundPlayerServers - 1],
+				snprintf( uiInfo.foundPlayerServerNames[uiInfo.numFoundPlayerServers - 1],
 							 sizeof( uiInfo.foundPlayerServerNames[uiInfo.numFoundPlayerServers - 1] ),
 							 "searching %d/%d...", uiInfo.pendingServerStatus.num, numFound );
 			}
@@ -5723,9 +5723,9 @@ static void UI_BuildFindPlayerList( qboolean force ) {
 	} else {
 		// add a line that shows the number of servers found
 		if ( !uiInfo.numFoundPlayerServers ) {
-			Com_sprintf( uiInfo.foundPlayerServerNames[0], sizeof( uiInfo.foundPlayerServerNames[0] ), "no servers found" );
+			snprintf( uiInfo.foundPlayerServerNames[0], sizeof( uiInfo.foundPlayerServerNames[0] ), "no servers found" );
 		} else {
-			Com_sprintf( uiInfo.foundPlayerServerNames[uiInfo.numFoundPlayerServers-1], sizeof( uiInfo.foundPlayerServerNames[0] ),
+			snprintf( uiInfo.foundPlayerServerNames[uiInfo.numFoundPlayerServers-1], sizeof( uiInfo.foundPlayerServerNames[0] ),
 						"%d server%s found with player %s", uiInfo.numFoundPlayerServers - 1,
 						uiInfo.numFoundPlayerServers == 2 ? "" : "s", uiInfo.findPlayerName );
 		}
@@ -5960,14 +5960,14 @@ static const char *UI_FeederItemText( float feederID, int index, int column, qha
 							nettype = 0;
 						}
 
-					Com_sprintf( hostname, sizeof( hostname ), "^7|^2%s^7|  %s",
+					snprintf( hostname, sizeof( hostname ), "^7|^2%s^7|  %s",
 						netnames[nettype],
 						Info_ValueForKey( info, "hostname" ));
 					return hostname;
 				}
 			case SORT_MAP: return Info_ValueForKey( info, "mapname" );
 			case SORT_CLIENTS:
-				Com_sprintf( clientBuff, sizeof( clientBuff ), "%s (%s)", Info_ValueForKey( info, "clients" ), Info_ValueForKey( info, "sv_maxclients" ) );
+				snprintf( clientBuff, sizeof( clientBuff ), "%s (%s)", Info_ValueForKey( info, "clients" ), Info_ValueForKey( info, "sv_maxclients" ) );
 				return clientBuff;
 			case SORT_GAME:
 				game = atoi( Info_ValueForKey( info, "gametype" ) );
@@ -6709,9 +6709,9 @@ static void UI_BuildQ3Model_List( void ) {
 			// look for icon_????
 			if ( Q_stricmpn( skinname, "icon_", 5 ) == 0 && !( Q_stricmp( skinname,"icon_blue" ) == 0 || Q_stricmp( skinname,"icon_red" ) == 0 ) ) {
 				if ( Q_stricmp( skinname, "icon_default" ) == 0 ) {
-					Com_sprintf( uiInfo.q3HeadNames[uiInfo.q3HeadCount], sizeof(uiInfo.q3HeadNames[uiInfo.q3HeadCount]), "%s", dirptr);
+					snprintf( uiInfo.q3HeadNames[uiInfo.q3HeadCount], sizeof(uiInfo.q3HeadNames[uiInfo.q3HeadCount]), "%s", dirptr);
 				} else {
-					Com_sprintf( uiInfo.q3HeadNames[uiInfo.q3HeadCount], sizeof( uiInfo.q3HeadNames[uiInfo.q3HeadCount] ), "%s/%s",dirptr, skinname + 5 );
+					snprintf( uiInfo.q3HeadNames[uiInfo.q3HeadCount], sizeof( uiInfo.q3HeadNames[uiInfo.q3HeadCount] ), "%s/%s",dirptr, skinname + 5 );
 				}
 				uiInfo.q3HeadIcons[uiInfo.q3HeadCount++] = trap_R_RegisterShaderNoMip( va( "models/players/%s/%s",dirptr,skinname ) );
 			}
@@ -7176,17 +7176,17 @@ static char lastLoadingText[MAX_INFO_VALUE];
 
 static void UI_ReadableSize( char *buf, int bufsize, int value ) {
 	if ( value > 1024 * 1024 * 1024 ) { // gigs
-		Com_sprintf( buf, bufsize, "%d", value / ( 1024 * 1024 * 1024 ) );
-		Com_sprintf( buf + strlen( buf ), bufsize - strlen( buf ), ".%02d GB",
+		snprintf( buf, bufsize, "%d", value / ( 1024 * 1024 * 1024 ) );
+		snprintf( buf + strlen( buf ), bufsize - strlen( buf ), ".%02d GB",
 					 ( value % ( 1024 * 1024 * 1024 ) ) * 100 / ( 1024 * 1024 * 1024 ) );
 	} else if ( value > 1024 * 1024 ) { // megs
-		Com_sprintf( buf, bufsize, "%d", value / ( 1024 * 1024 ) );
-		Com_sprintf( buf + strlen( buf ), bufsize - strlen( buf ), ".%02d MB",
+		snprintf( buf, bufsize, "%d", value / ( 1024 * 1024 ) );
+		snprintf( buf + strlen( buf ), bufsize - strlen( buf ), ".%02d MB",
 					 ( value % ( 1024 * 1024 ) ) * 100 / ( 1024 * 1024 ) );
 	} else if ( value > 1024 ) { // kilos
-		Com_sprintf( buf, bufsize, "%d KB", value / 1024 );
+		snprintf( buf, bufsize, "%d KB", value / 1024 );
 	} else { // bytes
-		Com_sprintf( buf, bufsize, "%d bytes", value );
+		snprintf( buf, bufsize, "%d bytes", value );
 	}
 }
 
@@ -7195,11 +7195,11 @@ static void UI_PrintTime( char *buf, int bufsize, int time ) {
 	time /= 1000;  // change to seconds
 
 	if ( time > 3600 ) { // in the hours range
-		Com_sprintf( buf, bufsize, "%d hr %d min", time / 3600, ( time % 3600 ) / 60 );
+		snprintf( buf, bufsize, "%d hr %d min", time / 3600, ( time % 3600 ) / 60 );
 	} else if ( time > 60 ) { // mins
-		Com_sprintf( buf, bufsize, "%d min %d sec", time / 60, time % 60 );
+		snprintf( buf, bufsize, "%d min %d sec", time / 60, time % 60 );
 	} else  { // secs
-		Com_sprintf( buf, bufsize, "%d sec", time );
+		snprintf( buf, bufsize, "%d sec", time );
 	}
 }
 
@@ -7321,7 +7321,7 @@ void UI_DrawConnectScreen( qboolean overlay ) {
 	if ( !Q_stricmp( cstate.servername,"localhost" ) ) {
 //		Text_PaintCenter(centerPoint, yStart + 48, UI_FONT_DEFAULT, scale, colorWhite, va("Get Psyched!"), ITEM_TEXTSTYLE_SHADOWEDMORE);
 	} else {
-		Com_sprintf(text, sizeof(text), "Connecting to %s", cstate.servername);
+		snprintf(text, sizeof(text), "Connecting to %s", cstate.servername);
 		Text_PaintCenter( centerPoint, yStart + 48, UI_FONT_DEFAULT, scale, colorWhite,text, ITEM_TEXTSTYLE_SHADOWEDMORE );
 	}
 

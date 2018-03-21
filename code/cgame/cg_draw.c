@@ -276,7 +276,7 @@ static void CG_DrawField( int x, int y, int width, int value ) {
 		break;
 	}
 
-	Com_sprintf( num, sizeof( num ), "%i", value );
+	snprintf( num, sizeof( num ), "%i", value );
 	l = strlen( num );
 	if ( l > width ) {
 		l = width;
@@ -840,7 +840,7 @@ static void CG_DrawStatusBar( void ) {
 //	CG_DrawField ( 185, STATUSBARHEIGHT, 3, value);
 	{
 		char printme[16];
-		Com_sprintf( printme, sizeof( printme ), "%d", value );
+		snprintf( printme, sizeof( printme ), "%d", value );
 		//CG_DrawBigString( 185, STATUSBARHEIGHT, printme, cg_hudAlpha.value );
 		CG_DrawBigString2( 16 + 23 + 43, STATUSBARHEIGHT, printme, cg_hudAlpha.value );
 	}
@@ -859,7 +859,7 @@ static void CG_DrawStatusBar( void ) {
 //		CG_DrawField (370, STATUSBARHEIGHT, 3, value);
 		{
 			char printme[16];
-			Com_sprintf( printme, sizeof( printme ), "%d", value );
+			snprintf( printme, sizeof( printme ), "%d", value );
 			//CG_DrawBigString( 370, STATUSBARHEIGHT, printme, cg_hudAlpha.value );
 			CG_DrawBigString2( 200, STATUSBARHEIGHT, printme, cg_hudAlpha.value );
 		}
@@ -1149,7 +1149,7 @@ static float CG_DrawTeamOverlay( float y ) {
 
 			CG_ColorForHealth( hcolor );
 
-			Com_sprintf( st, sizeof( st ), "%3i %3i", ci->health,  ci->armor );
+			snprintf( st, sizeof( st ), "%3i %3i", ci->health,  ci->armor );
 
 			xx = x + TINYCHAR_WIDTH * 3 +
 				 TINYCHAR_WIDTH * pwidth + TINYCHAR_WIDTH * lwidth;
@@ -1584,16 +1584,16 @@ static void CG_DrawPickupItem( void ) {
 			if ( bg_itemlist[ value ].giType == IT_AMMO || bg_itemlist[ value ].giType == IT_HEALTH || bg_itemlist[value].giType == IT_POWERUP ) {
 				if ( bg_itemlist[ value ].world_model[2] ) {   // this is a multi-stage item
 					// FIXME: print the correct amount for multi-stage
-					Com_sprintf( pickupText, sizeof( pickupText ), "%s", cgs.itemPrintNames[ value ] );
+					snprintf( pickupText, sizeof( pickupText ), "%s", cgs.itemPrintNames[ value ] );
 				} else {
 					if ( bg_itemlist[ value ].gameskillnumber[cg_gameSkill.integer] > 1 ) {
-						Com_sprintf( pickupText, sizeof( pickupText ), "%i  %s", bg_itemlist[ value ].gameskillnumber[cg_gameSkill.integer], cgs.itemPrintNames[ value ] );
+						snprintf( pickupText, sizeof( pickupText ), "%i  %s", bg_itemlist[ value ].gameskillnumber[cg_gameSkill.integer], cgs.itemPrintNames[ value ] );
 					} else {
-						Com_sprintf( pickupText, sizeof( pickupText ), "%s", cgs.itemPrintNames[value] );
+						snprintf( pickupText, sizeof( pickupText ), "%s", cgs.itemPrintNames[value] );
 					}
 				}
 			} else {
-				Com_sprintf( pickupText, sizeof( pickupText ), "%s", cgs.itemPrintNames[value] );
+				snprintf( pickupText, sizeof( pickupText ), "%s", cgs.itemPrintNames[value] );
 			}
 
 			color[0] = color[1] = color[2] = 1.0;
@@ -3044,14 +3044,14 @@ static qboolean CG_DrawFollow( void ) {
 		color[1] = 0;
 		color[2] = 0;
 		if ( cgs.clientinfo[cg.snap->ps.clientNum].team == TEAM_RED ) {
-			Com_sprintf( deploytime, sizeof(deploytime), "Deploying in %d seconds", (int)( (float)( cg_redlimbotime.integer - ( cg.time % cg_redlimbotime.integer ) ) * 0.001f ) );
+			snprintf( deploytime, sizeof(deploytime), "Deploying in %d seconds", (int)( (float)( cg_redlimbotime.integer - ( cg.time % cg_redlimbotime.integer ) ) * 0.001f ) );
 		} else {
-			Com_sprintf( deploytime, sizeof(deploytime), "Deploying in %d seconds", (int)( (float)( cg_bluelimbotime.integer - ( cg.time % cg_bluelimbotime.integer ) ) * 0.001f ) );
+			snprintf( deploytime, sizeof(deploytime), "Deploying in %d seconds", (int)( (float)( cg_bluelimbotime.integer - ( cg.time % cg_bluelimbotime.integer ) ) * 0.001f ) );
 		}
 
 		x = 0.5 * ( 640 - BIGCHAR_WIDTH * strlen( deploytime ) ); //CG_DrawStrlen( deploytime ) );
 		CG_DrawStringExt( x, 24, deploytime, color, qtrue, qtrue, BIGCHAR_WIDTH, BIGCHAR_HEIGHT, 0 );
-		Com_sprintf( deploytime, sizeof(deploytime), "(Following %s)",cgs.clientinfo[ cg.snap->ps.clientNum ].name );
+		snprintf( deploytime, sizeof(deploytime), "(Following %s)",cgs.clientinfo[ cg.snap->ps.clientNum ].name );
 		x = 0.5 * ( 640 - BIGCHAR_WIDTH * strlen( deploytime ) ); //CG_DrawStrlen( deploytime ) );
 		CG_DrawStringExt( x, 48, deploytime, color, qtrue, qtrue, BIGCHAR_WIDTH, BIGCHAR_HEIGHT, 0 );
 

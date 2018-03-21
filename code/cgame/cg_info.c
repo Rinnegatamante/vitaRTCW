@@ -97,7 +97,7 @@ void CG_LoadingClient( int clientNum ) {
 		skin = "default";
 	}
 
-	Com_sprintf( iconName, MAX_QPATH, "models/players/%s/icon_%s.tga", model, skin );
+	snprintf( iconName, MAX_QPATH, "models/players/%s/icon_%s.tga", model, skin );
 
 // (SA) ignore player icons for the moment
 	if ( !( cg_entities[clientNum].currentState.aiChar ) ) {

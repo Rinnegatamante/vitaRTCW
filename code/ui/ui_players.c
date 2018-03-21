@@ -958,15 +958,15 @@ UI_RegisterClientSkin
 static qboolean UI_RegisterClientSkin( playerInfo_t *pi, const char *modelName, const char *skinName ) {
 	char filename[MAX_QPATH];
 
-//	Com_sprintf( filename, sizeof( filename ), "models/players/%s/lower_%s.skin", modelName, skinName );
-	Com_sprintf( filename, sizeof( filename ), "models/players/%s/body_%s.skin", modelName, skinName );      // NERVE - SMF - make this work with wolf
+//	snprintf( filename, sizeof( filename ), "models/players/%s/lower_%s.skin", modelName, skinName );
+	snprintf( filename, sizeof( filename ), "models/players/%s/body_%s.skin", modelName, skinName );      // NERVE - SMF - make this work with wolf
 	pi->legsSkin = trap_R_RegisterSkin( filename );
 
-//	Com_sprintf( filename, sizeof( filename ), "models/players/%s/upper_%s.skin", modelName, skinName );
-	Com_sprintf( filename, sizeof( filename ), "models/players/%s/body_%s.skin", modelName, skinName );  // NERVE - SMF - make this work with wolf
+//	snprintf( filename, sizeof( filename ), "models/players/%s/upper_%s.skin", modelName, skinName );
+	snprintf( filename, sizeof( filename ), "models/players/%s/body_%s.skin", modelName, skinName );  // NERVE - SMF - make this work with wolf
 	pi->torsoSkin = trap_R_RegisterSkin( filename );
 
-	Com_sprintf( filename, sizeof( filename ), "models/players/%s/head_%s.skin", modelName, skinName );
+	snprintf( filename, sizeof( filename ), "models/players/%s/head_%s.skin", modelName, skinName );
 	pi->headSkin = trap_R_RegisterSkin( filename );
 
 	if ( !pi->legsSkin || !pi->torsoSkin || !pi->headSkin ) {
@@ -1397,7 +1397,7 @@ qboolean UI_RegisterClientModelname( playerInfo_t *pi, const char *modelSkinName
 			}
 		}
 
-		Com_sprintf( skinName, sizeof(skinName), "%s%s1", team, playerClass );
+		snprintf( skinName, sizeof(skinName), "%s%s1", team, playerClass );
 	}
 	// -NERVE - SMF
 
@@ -1409,23 +1409,23 @@ qboolean UI_RegisterClientModelname( playerInfo_t *pi, const char *modelSkinName
 
 	// load cmodels before models so filecache works
 
-//	Com_sprintf( filename, sizeof( filename ), "models/players/%s/lower.md3", modelName );
-	Com_sprintf( filename, sizeof( filename ), "models/players/%s/body.mds", modelName ); // NERVE - SMF - make this work with wolf
+//	snprintf( filename, sizeof( filename ), "models/players/%s/lower.md3", modelName );
+	snprintf( filename, sizeof( filename ), "models/players/%s/body.mds", modelName ); // NERVE - SMF - make this work with wolf
 	pi->legsModel = trap_R_RegisterModel( filename );
 	if ( !pi->legsModel ) {
 		Com_Printf( "Failed to load model file %s\n", filename );
 		return qfalse;
 	}
 
-//	Com_sprintf( filename, sizeof( filename ), "models/players/%s/upper.md3", modelName );
-	Com_sprintf( filename, sizeof( filename ), "models/players/%s/body.mds", modelName ); // NERVE - SMF - make this work with wolf
+//	snprintf( filename, sizeof( filename ), "models/players/%s/upper.md3", modelName );
+	snprintf( filename, sizeof( filename ), "models/players/%s/body.mds", modelName ); // NERVE - SMF - make this work with wolf
 	pi->torsoModel = trap_R_RegisterModel( filename );
 	if ( !pi->torsoModel ) {
 		Com_Printf( "Failed to load model file %s\n", filename );
 		return qfalse;
 	}
 
-	Com_sprintf( filename, sizeof( filename ), "models/players/%s/head.md3", modelName );
+	snprintf( filename, sizeof( filename ), "models/players/%s/head.md3", modelName );
 	pi->headModel = trap_R_RegisterModel( filename );
 	if ( !pi->headModel ) {
 		Com_Printf( "Failed to load model file %s\n", filename );
@@ -1451,8 +1451,8 @@ qboolean UI_RegisterClientModelname( playerInfo_t *pi, const char *modelSkinName
 
 	// load the animations
 //----(SA) changing name of config file to avoid backwards or alternate compatibility confustion
-//	Com_sprintf( filename, sizeof( filename ), "models/players/%s/animation.cfg", modelName );
-	Com_sprintf( filename, sizeof( filename ), "models/players/%s/wolfanim.cfg", modelName );
+//	snprintf( filename, sizeof( filename ), "models/players/%s/animation.cfg", modelName );
+	snprintf( filename, sizeof( filename ), "models/players/%s/wolfanim.cfg", modelName );
 //----(SA) end
 	if ( !UI_ParseAnimationFile( filename, pi ) ) {         // NERVE - SMF - make this work with wolf
 		Com_Printf( "Failed to load animation file %s\n", filename );

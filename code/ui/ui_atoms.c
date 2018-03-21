@@ -184,7 +184,7 @@ void UI_LoadBestScores( const char *map, int game ) {
 	int protocol, protocolLegacy;
 
 	memset( &newInfo, 0, sizeof( postGameInfo_t ) );
-	Com_sprintf( fileName, MAX_QPATH, "games/%s_%i.game", map, game );
+	snprintf( fileName, MAX_QPATH, "games/%s_%i.game", map, game );
 	if ( trap_FS_FOpenFile( fileName, &f, FS_READ ) >= 0 ) {
 		int size = 0;
 		trap_FS_Read( &size, sizeof( int ), f );
@@ -205,7 +205,7 @@ void UI_LoadBestScores( const char *map, int game ) {
 	if(protocolLegacy == protocol)
 		protocolLegacy = 0;
 
-	Com_sprintf(fileName, MAX_QPATH, "demos/%s_%d.%s%d", map, game, DEMOEXT, protocol);
+	snprintf(fileName, MAX_QPATH, "demos/%s_%d.%s%d", map, game, DEMOEXT, protocol);
 	if(trap_FS_FOpenFile(fileName, &f, FS_READ) >= 0)
 	{
 		uiInfo.demoAvailable = qtrue;
@@ -213,7 +213,7 @@ void UI_LoadBestScores( const char *map, int game ) {
 	}
 	else if(protocolLegacy > 0)
 	{
-		Com_sprintf(fileName, MAX_QPATH, "demos/%s_%d.%s%d", map, game, DEMOEXT, protocolLegacy);
+		snprintf(fileName, MAX_QPATH, "demos/%s_%d.%s%d", map, game, DEMOEXT, protocolLegacy);
 		if (trap_FS_FOpenFile(fileName, &f, FS_READ) >= 0)
 		{
 			uiInfo.demoAvailable = qtrue;
@@ -286,7 +286,7 @@ static void UI_CalcPostGameStats( void ) {
 	game = atoi( Info_ValueForKey( info, "g_gametype" ) );
 
 	// compose file name
-	Com_sprintf( fileName, MAX_QPATH, "games/%s_%i.game", map, game );
+	snprintf( fileName, MAX_QPATH, "games/%s_%i.game", map, game );
 	// see if we have one already
 	memset( &oldInfo, 0, sizeof( postGameInfo_t ) );
 	if ( trap_FS_FOpenFile( fileName, &f, FS_READ ) >= 0 ) {

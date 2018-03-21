@@ -40,7 +40,7 @@ If you have questions concerning this license or the applicable additional terms
 {"va", (byte *)va},
 {"Q_strcasecmp", (byte *)Q_strcasecmp},
 {"Q_strncasecmp", (byte *)Q_strncasecmp},
-{"Com_sprintf", (byte *)Com_sprintf},
+{"Com_sprintf", NULL},
 {"Q_CountChar", (byte *)Q_CountChar},
 {"Q_CleanStr", (byte *)Q_CleanStr},
 {"Q_PrintStrlen", (byte *)Q_PrintStrlen},

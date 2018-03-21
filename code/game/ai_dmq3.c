@@ -2111,7 +2111,7 @@ int BotEntityToActivate( int entitynum ) {
 	aas_entityinfo_t entinfo;
 
 	BotEntityInfo( entitynum, &entinfo );
-	Com_sprintf( model, sizeof( model ), "*%d", entinfo.modelindex );
+	snprintf( model, sizeof( model ), "*%d", entinfo.modelindex );
 	for ( ent = trap_AAS_NextBSPEntity( 0 ); ent; ent = trap_AAS_NextBSPEntity( ent ) ) {
 		if ( !trap_AAS_ValueForBSPEpairKey( ent, "model", tmpmodel, sizeof( tmpmodel ) ) ) {
 			continue;
@@ -2376,7 +2376,7 @@ void BotAIBlocked( bot_state_t *bs, bot_moveresult_t *moveresult, int activate )
 					//
 #ifdef OBSTACLEDEBUG
 					if ( bs->activatemessage_time < trap_AAS_Time() ) {
-						Com_sprintf( buf, sizeof( buf ), "I have to activate a button at %1.1f %1.1f %1.1f in area %d\n",
+						snprintf( buf, sizeof( buf ), "I have to activate a button at %1.1f %1.1f %1.1f in area %d\n",
 									 goalorigin[0], goalorigin[1], goalorigin[2], areas[i] );
 						trap_EA_Say( bs->client, buf );
 						bs->activatemessage_time = trap_AAS_Time() + 5;
@@ -2435,7 +2435,7 @@ void BotAIBlocked( bot_state_t *bs, bot_moveresult_t *moveresult, int activate )
   #ifdef OBSTACLEDEBUG
 			  if (bs->activatemessage_time < AAS_Time())
 			  {
-				  Com_sprintf(buf, sizeof(buf), "I have to activate a trigger at %1.1f %1.1f %1.1f in area %d\n",
+				  snprintf(buf, sizeof(buf), "I have to activate a trigger at %1.1f %1.1f %1.1f in area %d\n",
 								  goalorigin[0], goalorigin[1], goalorigin[2], AAS_PointAreaNum(goalorigin));
 				  EA_Say(bs->client, buf);
 				  bs->activatemessage_time = AAS_Time() + 5;

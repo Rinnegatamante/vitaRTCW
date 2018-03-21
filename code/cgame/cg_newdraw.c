@@ -210,7 +210,7 @@ static void CG_DrawPlayerArmorValue( rectDef_t *rect, int font, float scale, vec
 		CG_DrawPic( rect->x, rect->y, rect->w, rect->h, shader );
 		trap_R_SetColor( NULL );
 	} else {
-		Com_sprintf( num, sizeof( num ), "%i", value );
+		snprintf( num, sizeof( num ), "%i", value );
 		value = CG_Text_Width( num, font, scale, 0 );
 		CG_Text_Paint( rect->x + ( rect->w - value ) / 2, rect->y + rect->h, font, scale, color, num, 0, 0, textStyle );
 	}
@@ -640,7 +640,7 @@ static void CG_DrawPlayerAmmoValue( rectDef_t *rect, int font, float scale, vec4
 			CG_DrawPic( rect->x, rect->y, rect->w, rect->h, shader );
 			trap_R_SetColor( NULL );
 		} else {
-			Com_sprintf( num, sizeof( num ), "%i", value );
+			snprintf( num, sizeof( num ), "%i", value );
 			value = CG_Text_Width( num, font, scale, 0 );
 			if ( type == 0 ) {
 				// Moved this up a little so it's not on top of the weapon heat bar
@@ -651,7 +651,7 @@ static void CG_DrawPlayerAmmoValue( rectDef_t *rect, int font, float scale, vec4
 
 //			if(special) {	// draw '0' for akimbo guns
 			if ( value2 || ( special && type == 1 ) ) {
-				Com_sprintf( num, sizeof( num ), "%i /", value2 );
+				snprintf( num, sizeof( num ), "%i /", value2 );
 				value = CG_Text_Width( num, font, scale, 0 );
 				CG_Text_Paint( -42 + rect->x + ( rect->w - value ) / 2, rect->y + rect->h, font, scale, color, num, 0, 0, textStyle );
 			}
@@ -722,7 +722,7 @@ static void CG_DrawSelectedPlayerHealth( rectDef_t *rect, int font, float scale,
 			CG_DrawPic( rect->x, rect->y, rect->w, rect->h, shader );
 			trap_R_SetColor( NULL );
 		} else {
-			Com_sprintf( num, sizeof( num ), "%i", ci->health );
+			snprintf( num, sizeof( num ), "%i", ci->health );
 			value = CG_Text_Width( num, font, scale, 0 );
 			CG_Text_Paint( rect->x + ( rect->w - value ) / 2, rect->y + rect->h, font, scale, color, num, 0, 0, textStyle );
 		}
@@ -742,7 +742,7 @@ static void CG_DrawSelectedPlayerArmor( rectDef_t *rect, int font, float scale, 
 				CG_DrawPic( rect->x, rect->y, rect->w, rect->h, shader );
 				trap_R_SetColor( NULL );
 			} else {
-				Com_sprintf( num, sizeof( num ), "%i", ci->armor );
+				snprintf( num, sizeof( num ), "%i", ci->armor );
 				value = CG_Text_Width( num, font, scale, 0 );
 				CG_Text_Paint( rect->x + ( rect->w - value ) / 2, rect->y + rect->h, font, scale, color, num, 0, 0, textStyle );
 			}
@@ -874,7 +874,7 @@ static void CG_DrawPlayerScore( rectDef_t *rect, int font, float scale, vec4_t c
 		CG_DrawPic( rect->x, rect->y, rect->w, rect->h, shader );
 		trap_R_SetColor( NULL );
 	} else {
-		Com_sprintf( num, sizeof( num ), "%i", value );
+		snprintf( num, sizeof( num ), "%i", value );
 		value = CG_Text_Width( num, font, scale, 0 );
 		CG_Text_Paint( rect->x + ( rect->w - value ) / 2, rect->y + rect->h, font, scale, color, num, 0, 0, textStyle );
 	}
@@ -1074,7 +1074,7 @@ static void CG_DrawPlayerHealth( rectDef_t *rect, int font, float scale, vec4_t 
 		CG_DrawPic( rect->x, rect->y, rect->w, rect->h, shader );
 		trap_R_SetColor( NULL );
 	} else {
-		Com_sprintf( num, sizeof( num ), "%i", value );
+		snprintf( num, sizeof( num ), "%i", value );
 		value = CG_Text_Width( num, font, scale, 0 );
 		CG_Text_Paint( rect->x + ( rect->w - value ) / 2, rect->y + rect->h, font, scale, color, num, 0, 0, textStyle );
 	}
@@ -1084,9 +1084,9 @@ static void CG_DrawRedScore( rectDef_t *rect, int font, float scale, vec4_t colo
 	int value;
 	char num[16];
 	if ( cgs.scores1 == SCORE_NOT_PRESENT ) {
-		Com_sprintf( num, sizeof( num ), "-" );
+		snprintf( num, sizeof( num ), "-" );
 	} else {
-		Com_sprintf( num, sizeof( num ), "%i", cgs.scores1 );
+		snprintf( num, sizeof( num ), "%i", cgs.scores1 );
 	}
 	value = CG_Text_Width( num, font, scale, 0 );
 	CG_Text_Paint( rect->x + rect->w - value, rect->y + rect->h, font, scale, color, num, 0, 0, textStyle );
@@ -1097,9 +1097,9 @@ static void CG_DrawBlueScore( rectDef_t *rect, int font, float scale, vec4_t col
 	char num[16];
 
 	if ( cgs.scores2 == SCORE_NOT_PRESENT ) {
-		Com_sprintf( num, sizeof( num ), "-" );
+		snprintf( num, sizeof( num ), "-" );
 	} else {
-		Com_sprintf( num, sizeof( num ), "%i", cgs.scores2 );
+		snprintf( num, sizeof( num ), "%i", cgs.scores2 );
 	}
 	value = CG_Text_Width( num, font, scale, 0 );
 	CG_Text_Paint( rect->x + rect->w - value, rect->y + rect->h, font, scale, color, num, 0, 0, textStyle );
@@ -1245,7 +1245,7 @@ static void CG_HarvesterSkulls( rectDef_t *rect, int font, float scale, vec4_t c
 		value = 99;
 	}
 
-	Com_sprintf( num, sizeof( num ), "%i", value );
+	snprintf( num, sizeof( num ), "%i", value );
 	value = CG_Text_Width( num, font, scale, 0 );
 	CG_Text_Paint( rect->x + ( rect->w - value ), rect->y + rect->h, scale, color, num, 0, 0, textStyle );
 
@@ -1404,7 +1404,7 @@ static void CG_DrawAreaPowerUp( rectDef_t *rect, int align, float spacing, int f
 
 			CG_DrawPic( r2.x, r2.y, r2.w * .75, r2.h, trap_R_RegisterShader( item->icon ) );
 
-			Com_sprintf( num, sizeof( num ), "%i", sortedTime[i] / 1000 );
+			snprintf( num, sizeof( num ), "%i", sortedTime[i] / 1000 );
 			CG_Text_Paint( r2.x + ( r2.w * .75 ) + 3, r2.y + r2.h, font, scale, color, num, 0, 0, 0 );
 			*inc += r2.w + spacing;
 		}
@@ -1938,7 +1938,7 @@ void CG_DrawNewTeamInfo( rectDef_t *rect, float text_x, float text_y, int font, 
 			trap_R_SetColor( hcolor );
 			CG_DrawPic( xx, y + 1, PIC_WIDTH - 2, PIC_WIDTH - 2, cgs.media.heartShader );
 
-			//Com_sprintf (st, sizeof(st), "%3i %3i", ci->health,	ci->armor);
+			//snprintf (st, sizeof(st), "%3i %3i", ci->health,	ci->armor);
 			//CG_Text_Paint(xx, y + text_y, scale, hcolor, st, 0, 0);
 
 			// draw weapon icon

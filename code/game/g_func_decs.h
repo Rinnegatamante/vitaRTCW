@@ -40,7 +40,9 @@ extern void Com_TruncateLongString ( char * buffer , const char * s ) ;
 extern char * QDECL va ( char * format , ... ) ;
 extern int Q_strcasecmp ( char * s1 , char * s2 ) ;
 extern int Q_strncasecmp ( char * s1 , char * s2 , int n ) ;
-extern int QDECL Com_sprintf ( char * dest , int size , const char * fmt , ... ) ;
+#ifndef __PSP2__
+extern int QDECL snprintf ( char * dest , int size , const char * fmt , ... ) ;
+#endif
 extern int Q_CountChar ( const char * string , char tocount ) ;
 extern char * Q_CleanStr ( char * string ) ;
 extern int Q_PrintStrlen ( const char * string ) ;

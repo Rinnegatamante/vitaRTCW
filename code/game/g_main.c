@@ -940,10 +940,10 @@ void G_RemapTeamShaders( void ) {
 #ifdef MISSIONPACK
 	char string[1024];
 	float f = level.time * 0.001;
-	Com_sprintf( string, sizeof( string ), "team_icon/%s_red", g_redteam.string );
+	snprintf( string, sizeof( string ), "team_icon/%s_red", g_redteam.string );
 	AddRemap( "textures/ctf2/redteam01", string, f );
 	AddRemap( "textures/ctf2/redteam02", string, f );
-	Com_sprintf( string, sizeof( string ), "team_icon/%s_blue", g_blueteam.string );
+	snprintf( string, sizeof( string ), "team_icon/%s_blue", g_blueteam.string );
 	AddRemap( "textures/ctf2/blueteam01", string, f );
 	AddRemap( "textures/ctf2/blueteam02", string, f );
 	trap_SetConfigstring( CS_SHADERSTATE, BuildShaderStateConfig() );
@@ -1935,7 +1935,7 @@ void QDECL G_LogPrintf( const char *fmt, ... ) {
 	tens = sec / 10;
 	sec -= tens * 10;
 
-	Com_sprintf( string, sizeof( string ), "%3i:%i%i ", min, tens, sec );
+	snprintf( string, sizeof( string ), "%3i:%i%i ", min, tens, sec );
 
 	va_start( argptr, fmt );
 	Q_vsnprintf(string + 7, sizeof(string) - 7, fmt, argptr);

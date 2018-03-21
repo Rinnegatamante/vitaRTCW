@@ -47,6 +47,10 @@ static sysfuncs_t sys_exports = {
 	fprintf,
 	fread,
 	fwrite,
+	// string
+	sprintf,
+	snprintf,
+	vsnprintf,
 };
 
 static modarg_t modarg;

@@ -78,7 +78,7 @@ const char  *CG_PlaceString( int rank ) {
 		s = va( "%ith", rank );
 	}
 
-	Com_sprintf( str, sizeof( str ), "%s%s", t, s );
+	snprintf( str, sizeof( str ), "%s%s", t, s );
 	return str;
 }
 

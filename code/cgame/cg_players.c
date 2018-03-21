@@ -333,7 +333,7 @@ static qboolean CG_ParseAnimationFiles( const char *modelname, clientInfo_t *ci,
 	Q_strncpyz( ci->modelInfo->modelname, modelname, sizeof( ci->modelInfo->modelname ) );
 
 	// load the cfg file
-	Com_sprintf( filename, sizeof( filename ), "models/players/%s/wolfanim.cfg", modelname );
+	snprintf( filename, sizeof( filename ), "models/players/%s/wolfanim.cfg", modelname );
 	len = trap_FS_FOpenFile( filename, &f, FS_READ );
 	if ( len <= 0 ) {
 		return qfalse;
@@ -358,14 +358,14 @@ static qboolean CG_ParseAnimationFiles( const char *modelname, clientInfo_t *ci,
 	CG_CalcMoveSpeeds( ci );
 
 	// load the script file
-	Com_sprintf( filename, sizeof( filename ), "models/players/%s/wolfanim.script", modelname );
+	snprintf( filename, sizeof( filename ), "models/players/%s/wolfanim.script", modelname );
 	len = trap_FS_FOpenFile( filename, &f, FS_READ );
 	if ( len <= 0 ) {
 		if ( ci->modelInfo->version > 1 ) {
 			return qfalse;
 		}
 		// try loading the default script for old legacy models
-		Com_sprintf( filename, sizeof( filename ), "models/players/default.script", modelname );
+		snprintf( filename, sizeof( filename ), "models/players/default.script", modelname );
 		len = trap_FS_FOpenFile( filename, &f, FS_READ );
 		if ( len <= 0 ) {
 			return qfalse;
@@ -398,17 +398,17 @@ static qboolean CG_RegisterClientSkin( clientInfo_t *ci, const char *modelName, 
 	char filename[MAX_QPATH];
 
 	// RF, try and register the new "body_*.skin" file for skeletal animation
-	Com_sprintf( filename, sizeof( filename ), "models/players/%s/body_%s.skin", modelName, skinName );
+	snprintf( filename, sizeof( filename ), "models/players/%s/body_%s.skin", modelName, skinName );
 	ci->legsSkin = trap_R_RegisterSkin( filename );
 	if ( ci->legsSkin ) { // skeletal model
 		ci->torsoSkin = ci->legsSkin;
 		return qtrue;
 	}
 
-	Com_sprintf( filename, sizeof( filename ), "models/players/%s/lower_%s.skin", modelName, skinName );
+	snprintf( filename, sizeof( filename ), "models/players/%s/lower_%s.skin", modelName, skinName );
 	ci->legsSkin = trap_R_RegisterSkin( filename );
 
-	Com_sprintf( filename, sizeof( filename ), "models/players/%s/upper_%s.skin", modelName, skinName );
+	snprintf( filename, sizeof( filename ), "models/players/%s/upper_%s.skin", modelName, skinName );
 	ci->torsoSkin = trap_R_RegisterSkin( filename );
 
 	if ( !ci->legsSkin || !ci->torsoSkin ) {
@@ -426,7 +426,7 @@ CG_RegisterClientHeadSkin
 static qboolean CG_RegisterClientHeadSkin( clientInfo_t *ci, const char *modelName, const char *hSkinName ) {
 	char filename[MAX_QPATH];
 
-	Com_sprintf( filename, sizeof( filename ), "models/players/%s/head_%s.skin", modelName, hSkinName );
+	snprintf( filename, sizeof( filename ), "models/players/%s/head_%s.skin", modelName, hSkinName );
 	ci->headSkin = trap_R_RegisterSkin( filename );
 
 	if ( !ci->headSkin ) {
@@ -461,20 +461,20 @@ static qboolean CG_RegisterAcc( clientInfo_t *ci, const char *modelName, const c
 
 		if ( *skin ) {
 			if ( trap_R_GetSkinModel( *skin, "md3_part", &namefromskin[0] ) ) {
-				Com_sprintf( filename, sizeof( filename ), "%s/acc/%s", modelName, namefromskin );
+				snprintf( filename, sizeof( filename ), "%s/acc/%s", modelName, namefromskin );
 				// NOTE: FIXME: this will currently only work with accessories in the <modelName>/acc directory.
 				//				It will have to strip the directory off the end and then use the remaining
 				//				path in order to work for arbitrary sub-directories.
-//				Com_sprintf( filename, sizeof( filename ), "%s/%s/%s.md3", modelName, <accpath>, namefromskin );
+//				snprintf( filename, sizeof( filename ), "%s/%s/%s.md3", modelName, <accpath>, namefromskin );
 
 			} else {
-				Com_sprintf( filename, sizeof( filename ), "%s/%s.md3", modelName, skinName );
+				snprintf( filename, sizeof( filename ), "%s/%s.md3", modelName, skinName );
 			}
 		} else {
-			Com_sprintf( filename, sizeof( filename ), "%s/%s.md3", modelName, skinName );
+			snprintf( filename, sizeof( filename ), "%s/%s.md3", modelName, skinName );
 		}
 	} else {                                    // the skin wants a straight model
-		Com_sprintf( filename, sizeof( filename ), "%s/%s", modelName, skinName );
+		snprintf( filename, sizeof( filename ), "%s/%s", modelName, skinName );
 	}
 
 
@@ -506,7 +506,7 @@ qboolean CG_ParseAnimationFiles( char *modelname, animModelInfo_t *modelInfo, in
 	Q_strncpyz( modelInfo->modelname, modelname, sizeof( modelInfo->modelname ) );
 
 	// load the cfg file
-	Com_sprintf( filename, sizeof( filename ), "models/players/%s/wolfanim.cfg", modelname );
+	snprintf( filename, sizeof( filename ), "models/players/%s/wolfanim.cfg", modelname );
 	len = trap_FS_FOpenFile( filename, &f, FS_READ );
 	if ( len <= 0 ) {
 		CG_Printf( "G_ParseAnimationFiles(): file '%s' not found\n", filename );       //----(SA)	added
@@ -524,14 +524,14 @@ qboolean CG_ParseAnimationFiles( char *modelname, animModelInfo_t *modelInfo, in
 	BG_AnimParseAnimConfig( modelInfo, filename, text );
 
 	// load the script file
-	Com_sprintf( filename, sizeof( filename ), "models/players/%s/wolfanim.script", modelname );
+	snprintf( filename, sizeof( filename ), "models/players/%s/wolfanim.script", modelname );
 	len = trap_FS_FOpenFile( filename, &f, FS_READ );
 	if ( len <= 0 ) {
 		if ( modelInfo->version > 1 ) {
 			return qfalse;
 		}
 		// try loading the default script for old legacy models
-		Com_sprintf( filename, sizeof( filename ), "models/players/default.script" );
+		snprintf( filename, sizeof( filename ), "models/players/default.script" );
 		len = trap_FS_FOpenFile( filename, &f, FS_READ );
 		if ( len <= 0 ) {
 			return qfalse;
@@ -635,14 +635,14 @@ static qboolean CG_RegisterClientModelname( clientInfo_t *ci, const char *modelN
 	// load cmodels before models so filecache works
 
 	if ( trap_R_GetSkinModel( ci->legsSkin, "md3_part", &namefromskin[0] ) ) {
-		Com_sprintf( filename, sizeof( filename ), "models/players/%s/%s", modelName, namefromskin );
+		snprintf( filename, sizeof( filename ), "models/players/%s/%s", modelName, namefromskin );
 		ci->legsModel = trap_R_RegisterModel( filename );
 	} else {    // try skeletal model
-		Com_sprintf( filename, sizeof( filename ), "models/players/%s/body.mds", modelName );
+		snprintf( filename, sizeof( filename ), "models/players/%s/body.mds", modelName );
 		ci->legsModel = trap_R_RegisterModel( filename );
 
 		if ( !ci->legsModel ) {   // revert to mesh animation
-			Com_sprintf( filename, sizeof( filename ), "models/players/%s/lower.md3", modelName );
+			snprintf( filename, sizeof( filename ), "models/players/%s/lower.md3", modelName );
 			ci->legsModel = trap_R_RegisterModel( filename );
 		} else {                // found skeletal model
 			ci->isSkeletal = qtrue;
@@ -658,9 +658,9 @@ static qboolean CG_RegisterClientModelname( clientInfo_t *ci, const char *modelN
 		}
 
 		if ( trap_R_GetSkinModel( ci->torsoSkin, "md3_part", &namefromskin[0] ) ) {
-			Com_sprintf( filename, sizeof( filename ), "models/players/%s/%s", modelName, namefromskin );
+			snprintf( filename, sizeof( filename ), "models/players/%s/%s", modelName, namefromskin );
 		} else {
-			Com_sprintf( filename, sizeof( filename ), "models/players/%s/upper.md3", modelName );
+			snprintf( filename, sizeof( filename ), "models/players/%s/upper.md3", modelName );
 		}
 
 		ci->torsoModel = trap_R_RegisterModel( filename );
@@ -1097,55 +1097,55 @@ nodam_rtshin            attached to tag_calfright
 			// ELITEGUARD
 
 			for ( i = 0; i < 4; i++ ) {
-				Com_sprintf( name, sizeof( name ), "sound/player/footsteps/eliteguard/step%i.wav", i + 1 );
+				snprintf( name, sizeof( name ), "sound/player/footsteps/eliteguard/step%i.wav", i + 1 );
 				cgs.media.footsteps[FOOTSTEP_ELITE_STEP][i] = trap_S_RegisterSound( name );
 
-				Com_sprintf( name, sizeof( name ), "sound/player/footsteps/eliteguard/clank%i.wav", i + 1 );
+				snprintf( name, sizeof( name ), "sound/player/footsteps/eliteguard/clank%i.wav", i + 1 );
 				cgs.media.footsteps[FOOTSTEP_ELITE_METAL][i] = trap_S_RegisterSound( name );
 
-//				Com_sprintf (name, sizeof(name), "sound/player/footsteps/eliteguard/roof%i.wav", i+1);
+//				snprintf (name, sizeof(name), "sound/player/footsteps/eliteguard/roof%i.wav", i+1);
 //				cgs.media.footsteps[FOOTSTEP_ELITE_ROOF][i] = trap_S_RegisterSound (name);
 
-				Com_sprintf( name, sizeof( name ), "sound/player/footsteps/eliteguard/wood%i.wav", i + 1 );
+				snprintf( name, sizeof( name ), "sound/player/footsteps/eliteguard/wood%i.wav", i + 1 );
 				cgs.media.footsteps[FOOTSTEP_ELITE_WOOD][i] = trap_S_RegisterSound( name );
 
-				Com_sprintf( name, sizeof( name ), "sound/player/footsteps/eliteguard/gravel%i.wav", i + 1 );
+				snprintf( name, sizeof( name ), "sound/player/footsteps/eliteguard/gravel%i.wav", i + 1 );
 				cgs.media.footsteps[FOOTSTEP_ELITE_GRAVEL][i] = trap_S_RegisterSound( name );
 			}
 		} else if (   !Q_strcasecmp( (char *)modelName, "protosoldier" ) )     {
 			// ProtoSoldier
 			for ( i = 0; i < 4; i++ ) {
-				Com_sprintf( name, sizeof( name ), "sound/player/footsteps/protosoldier/step%i.wav", i + 1 );
+				snprintf( name, sizeof( name ), "sound/player/footsteps/protosoldier/step%i.wav", i + 1 );
 				cgs.media.footsteps[FOOTSTEP_PROTOSOLDIER_STEP][i] = trap_S_RegisterSound( name );
 
-				Com_sprintf( name, sizeof( name ), "sound/player/footsteps/protosoldier/clank%i.wav", i + 1 );
+				snprintf( name, sizeof( name ), "sound/player/footsteps/protosoldier/clank%i.wav", i + 1 );
 				cgs.media.footsteps[FOOTSTEP_PROTOSOLDIER_METAL][i] = trap_S_RegisterSound( name );
 
-				Com_sprintf( name, sizeof( name ), "sound/player/footsteps/protosoldier/grass%i.wav", i + 1 );
+				snprintf( name, sizeof( name ), "sound/player/footsteps/protosoldier/grass%i.wav", i + 1 );
 				cgs.media.footsteps[FOOTSTEP_PROTOSOLDIER_GRASS][i] = trap_S_RegisterSound( name );
 
-				Com_sprintf( name, sizeof( name ), "sound/player/footsteps/protosoldier/gravel%i.wav", i + 1 );
+				snprintf( name, sizeof( name ), "sound/player/footsteps/protosoldier/gravel%i.wav", i + 1 );
 				cgs.media.footsteps[FOOTSTEP_PROTOSOLDIER_GRAVEL][i] = trap_S_RegisterSound( name );
 
-				Com_sprintf( name, sizeof( name ), "sound/player/footsteps/protosoldier/wood%i.wav", i + 1 );
+				snprintf( name, sizeof( name ), "sound/player/footsteps/protosoldier/wood%i.wav", i + 1 );
 				cgs.media.footsteps[FOOTSTEP_PROTOSOLDIER_WOOD][i] = trap_S_RegisterSound( name );
 			}
 		} else if ( !Q_strcasecmp( (char *)modelName, "supersoldier" ) )        {
 			// SuperSoldier/HEINRICH
 			for ( i = 0; i < 4; i++ ) {
-				Com_sprintf( name, sizeof( name ), "sound/player/footsteps/supersoldier/step%i.wav", i + 1 );
+				snprintf( name, sizeof( name ), "sound/player/footsteps/supersoldier/step%i.wav", i + 1 );
 				cgs.media.footsteps[FOOTSTEP_SUPERSOLDIER_STEP][i] = trap_S_RegisterSound( name );
 
-				Com_sprintf( name, sizeof( name ), "sound/player/footsteps/supersoldier/clank%i.wav", i + 1 );
+				snprintf( name, sizeof( name ), "sound/player/footsteps/supersoldier/clank%i.wav", i + 1 );
 				cgs.media.footsteps[FOOTSTEP_SUPERSOLDIER_METAL][i] = trap_S_RegisterSound( name );
 
-				Com_sprintf( name, sizeof( name ), "sound/player/footsteps/supersoldier/grass%i.wav", i + 1 );
+				snprintf( name, sizeof( name ), "sound/player/footsteps/supersoldier/grass%i.wav", i + 1 );
 				cgs.media.footsteps[FOOTSTEP_SUPERSOLDIER_GRASS][i] = trap_S_RegisterSound( name );
 
-				Com_sprintf( name, sizeof( name ), "sound/player/footsteps/supersoldier/gravel%i.wav", i + 1 );
+				snprintf( name, sizeof( name ), "sound/player/footsteps/supersoldier/gravel%i.wav", i + 1 );
 				cgs.media.footsteps[FOOTSTEP_SUPERSOLDIER_GRAVEL][i] = trap_S_RegisterSound( name );
 
-				Com_sprintf( name, sizeof( name ), "sound/player/footsteps/supersoldier/wood%i.wav", i + 1 );
+				snprintf( name, sizeof( name ), "sound/player/footsteps/supersoldier/wood%i.wav", i + 1 );
 				cgs.media.footsteps[FOOTSTEP_SUPERSOLDIER_WOOD][i] = trap_S_RegisterSound( name );
 			}
 		}
@@ -1153,31 +1153,31 @@ nodam_rtshin            attached to tag_calfright
 		else if ( !Q_strcasecmp( (char *)modelName, "heinrich" ) ) {
 			// SuperSoldier/HEINRICH
 			for ( i = 0; i < 4; i++ ) {
-				Com_sprintf( name, sizeof( name ), "sound/player/footsteps/heinrich/step%i.wav", i + 1 );
+				snprintf( name, sizeof( name ), "sound/player/footsteps/heinrich/step%i.wav", i + 1 );
 				cgs.media.footsteps[FOOTSTEP_HEINRICH][i] = trap_S_RegisterSound( name );
 			}
 		} else if ( !Q_strcasecmp( (char *)modelName, "loper" ) )        {
 			// Loper
 			for ( i = 0; i < 4; i++ ) {
-				Com_sprintf( name, sizeof( name ), "sound/player/footsteps/loper/clank%i.wav", i + 1 );
+				snprintf( name, sizeof( name ), "sound/player/footsteps/loper/clank%i.wav", i + 1 );
 				cgs.media.footsteps[FOOTSTEP_LOPER_METAL][i] = trap_S_RegisterSound( name );
 
-				Com_sprintf( name, sizeof( name ), "sound/player/footsteps/loper/step%i.wav", i + 1 );
+				snprintf( name, sizeof( name ), "sound/player/footsteps/loper/step%i.wav", i + 1 );
 				cgs.media.footsteps[FOOTSTEP_LOPER_STEP][i] = trap_S_RegisterSound( name );
 
-				Com_sprintf( name, sizeof( name ), "sound/player/footsteps/loper/wood%i.wav", i + 1 );
+				snprintf( name, sizeof( name ), "sound/player/footsteps/loper/wood%i.wav", i + 1 );
 				cgs.media.footsteps[FOOTSTEP_LOPER_WOOD][i] = trap_S_RegisterSound( name );
 			}
 		} else if ( !Q_strcasecmp( (char *)modelName, "zombie" ) )        {
 			// Zombie
 			for ( i = 0; i < 4; i++ ) {
-				Com_sprintf( name, sizeof( name ), "sound/player/footsteps/zombie/gravel%i.wav", i + 1 );
+				snprintf( name, sizeof( name ), "sound/player/footsteps/zombie/gravel%i.wav", i + 1 );
 				cgs.media.footsteps[FOOTSTEP_ZOMBIE_GRAVEL][i] = trap_S_RegisterSound( name );
 
-				Com_sprintf( name, sizeof( name ), "sound/player/footsteps/zombie/step%i.wav", i + 1 );
+				snprintf( name, sizeof( name ), "sound/player/footsteps/zombie/step%i.wav", i + 1 );
 				cgs.media.footsteps[FOOTSTEP_ZOMBIE_STEP][i] = trap_S_RegisterSound( name );
 
-				Com_sprintf( name, sizeof( name ), "sound/player/footsteps/zombie/wood%i.wav", i + 1 );
+				snprintf( name, sizeof( name ), "sound/player/footsteps/zombie/wood%i.wav", i + 1 );
 				cgs.media.footsteps[FOOTSTEP_ZOMBIE_WOOD][i] = trap_S_RegisterSound( name );
 			}
 		} else if ( !Q_strcasecmp( (char *)modelName, "beast" ) )        {
@@ -1212,9 +1212,9 @@ static qboolean CG_RegisterClientHeadname( clientInfo_t *ci, const char *modelNa
 	}
 
 	if ( trap_R_GetSkinModel( ci->headSkin, "md3_part", &namefromskin[0] ) ) {
-		Com_sprintf( filename, sizeof( filename ), "models/players/%s/%s", modelName, namefromskin );
+		snprintf( filename, sizeof( filename ), "models/players/%s/%s", modelName, namefromskin );
 	} else {
-		Com_sprintf( filename, sizeof( filename ), "models/players/%s/head.md3", modelName );
+		snprintf( filename, sizeof( filename ), "models/players/%s/head.md3", modelName );
 	}
 
 	ci->headModel = trap_R_RegisterModel( filename );
@@ -1347,7 +1347,7 @@ void CG_LoadClientInfo( int clientNum, clientInfo_t *ci ) {
 	}
 
 	// load the gibs
-	Com_sprintf( filename, sizeof( filename ), "models/players/%s/gibs.cfg", dir );
+	snprintf( filename, sizeof( filename ), "models/players/%s/gibs.cfg", dir );
 	if ( !CG_ParseGibModels( filename, ci ) ) {
 		// n/mind.. gib code will automatically fall back to old gibs
 	}
@@ -4533,7 +4533,7 @@ char    *vtosf( const vec3_t v ) {
 	s = str[index];
 	index = ( index + 1 ) & 7;
 
-	Com_sprintf( s, 64, "(%f %f %f)", v[0], v[1], v[2] );
+	snprintf( s, 64, "(%f %f %f)", v[0], v[1], v[2] );
 
 	return s;
 }

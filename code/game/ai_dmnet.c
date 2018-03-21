@@ -101,7 +101,7 @@ void BotRecordNodeSwitch( bot_state_t *bs, char *node, char *str ) {
 	char netname[MAX_NETNAME];
 
 	ClientName( bs->client, netname, sizeof( netname ) );
-	Com_sprintf( nodeswitch[numnodeswitches], 144, "%s at %2.1f entered %s: %s\n", netname, trap_AAS_Time(), node, str );
+	snprintf( nodeswitch[numnodeswitches], 144, "%s at %2.1f entered %s: %s\n", netname, trap_AAS_Time(), node, str );
 #ifdef DEBUG
 	if ( 0 ) {
 		BotAI_Print(PRT_MESSAGE, "%s", nodeswitch[numnodeswitches]);

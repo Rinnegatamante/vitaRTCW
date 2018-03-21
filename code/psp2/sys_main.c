@@ -439,10 +439,6 @@ void Sys_ParseArgs( int argc, char **argv )
 	}
 }
 
-#ifndef DEFAULT_BASEDIR
-# define DEFAULT_BASEDIR Sys_BinaryPath()
-#endif
-
 /*
 =================
 Sys_SigHandler
