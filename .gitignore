@@ -1,5 +1,12 @@
 Makefile.local
 *.swp
+*.o
+*.elf
+*.velf
+*.sfo
+*.vpk
+*.suprx
+*.bin
 *tags
 *~
 

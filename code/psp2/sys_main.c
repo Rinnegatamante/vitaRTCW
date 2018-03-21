@@ -284,8 +284,13 @@ Sys_UnloadDll
 */
 void Sys_UnloadDll( void *dllHandle )
 {
-	Com_Printf("Sys_UnloadDll: not implemented\n");
-	return;
+	if( !dllHandle )
+	{
+		Com_Printf("Sys_UnloadDll(NULL)\n");
+		return;
+	}
+
+	Sys_UnloadLibrary(dllHandle);
 }
 
 /*
@@ -371,10 +376,44 @@ Used to load a development dll instead of a virtual machine
 =================
 */
 void *Sys_LoadGameDll(const char *name,
-    intptr_t (QDECL **entryPoint)(int, ...),
-    intptr_t (*systemcalls)(intptr_t, ...)) {
-    Com_Printf("Sys_LoadGameDll: not implemented\n");
-    return NULL;
+	intptr_t (QDECL **entryPoint)(intptr_t, ...),
+	intptr_t (*systemcalls)(intptr_t, ...))
+{
+	void *libHandle;
+	void (*dllEntry)(intptr_t (*syscallptr)(intptr_t, ...));
+
+	assert(name);
+
+	if(!Sys_DllExtension(name))
+	{
+		Com_Printf("Refusing to attempt to load library \"%s\": Extension not allowed.\n", name);
+		return NULL;
+	}
+
+	Com_DPrintf( "Loading DLL file: %s\n", name);
+	libHandle = Sys_LoadLibrary(name);
+
+	if(!libHandle)
+	{
+		Com_Printf("Sys_LoadGameDll(%s) failed:\n\"%s\"\n", name, Sys_LibraryError());
+		return NULL;
+	}
+
+	dllEntry = Sys_LoadFunction( libHandle, "dllEntry" );
+	*entryPoint = Sys_LoadFunction( libHandle, "vmMain" );
+
+	if ( !*entryPoint || !dllEntry )
+	{
+		Com_Printf ( "Sys_LoadGameDll(%s) failed to find vmMain function:\n\"%s\" !\n", name, Sys_LibraryError( ) );
+		Sys_UnloadLibrary(libHandle);
+
+		return NULL;
+	}
+
+	Com_DPrintf ( "Sys_LoadGameDll(%s) found vmMain function at %p\n", name, *entryPoint );
+	dllEntry( systemcalls );
+
+	return libHandle;
 }
 
 /*

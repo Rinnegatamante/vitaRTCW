@@ -1,6 +1,5 @@
-TARGET   := cgame
+TARGET   := ui
 SOURCES  := .
-SOURCE_EXTRA := ../ui_qvm/ui_shared.c ../qcommon/q_math.c ../qcommon/q_shared.c
 CPPSOURCES := 
 INCLUDES := ../renderer ../qcommon ../botlib ../client ../server ../psp2 ../sys ../splines ../game
 
@@ -20,8 +19,8 @@ PREFIX  = arm-vita-eabi
 CC      = $(PREFIX)-gcc
 CXX      = $(PREFIX)-g++
 CFLAGS  = $(INCLUDE) -D__PSP2__ -D__FLOAT_WORD_ORDER=1 -D__GNU__ -DRELEASE \
-        -DUSE_ICON -DARCH_STRING=\"arm\" -DCGAME -DUSE_CODEC_VORBIS \
-        -DDEFAULT_BASEDIR=\"ux0:/data/iortcw\" -fno-lto -DCGAMEDLL \
+        -DUSE_ICON -DARCH_STRING=\"arm\" -DUI -DUSE_CODEC_VORBIS \
+        -DDEFAULT_BASEDIR=\"ux0:/data/iortcw\" -fno-lto \
         -DPRODUCT_VERSION=\"1.36_GIT_ba68b99c-2018-01-23\" -DHAVE_VM_COMPILED=true \
         -mfpu=neon -mcpu=cortex-a9 -fsigned-char -nostartfiles \
         -Wl,-q -O3 -g -ffast-math -fno-short-enums
