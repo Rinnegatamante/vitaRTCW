@@ -17,7 +17,6 @@ GNU General Public License for more details.
 #include <vitasdk.h>
 
 #define MAX_DLNAMELEN 256
-#define CWD "app0:"
 
 typedef struct dll_s
 {
@@ -82,7 +81,7 @@ void *dlopen( const char *name, int flag )
 	if( old ) { old->refcnt++; return old; }
 
 	char fullpath[128];
-	snprintf( fullpath, sizeof(fullpath), CWD "/%s", name );
+	snprintf( fullpath, sizeof(fullpath), name );
 
 	modarg.imports = sys_exports;
 	modarg.exports = NULL;

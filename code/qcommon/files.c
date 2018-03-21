@@ -1684,6 +1684,8 @@ int FS_FindVM(void **startSearch, char *found, int foundlen, const char *name, i
 	if(enableDll)
 		Q_strncpyz(dllName, Sys_GetDLLName(name), sizeof(dllName));
 
+	Com_DPrintf("Looking for the DLL: %s\n", dllName);
+	
 	Com_sprintf(qvmName, sizeof(qvmName), "vm/%s.sp.qvm", name);
 
 	lastSearch = *startSearch;
@@ -1701,7 +1703,9 @@ int FS_FindVM(void **startSearch, char *found, int foundlen, const char *name, i
 			if(enableDll)
 			{
 				netpath = FS_BuildOSPath(dir->path, dir->gamedir, dllName);
-
+				
+				Com_DPrintf("Trying to open: %s\n", netpath);
+				
 				if(FS_FileInPathExists(netpath))
 				{
 					Q_strncpyz(found, netpath, foundlen);
