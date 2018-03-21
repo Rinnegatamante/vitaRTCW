@@ -63,7 +63,7 @@ void Sys_SetKeys(uint32_t keys, int time){
 	if((keys & SCE_CTRL_LTRIGGER) != (oldkeys & SCE_CTRL_LTRIGGER))
 		Key_Event(K_AUX5, (keys & SCE_CTRL_LTRIGGER) == SCE_CTRL_LTRIGGER, time);
 	if((keys & SCE_CTRL_RTRIGGER) != (oldkeys & SCE_CTRL_RTRIGGER))
-		Key_Event(K_AUX6, (keys & SCE_CTRL_RTRIGGER) == SCE_CTRL_RTRIGGER, time);
+		Key_Event(K_MOUSE1, (keys & SCE_CTRL_RTRIGGER) == SCE_CTRL_RTRIGGER, time);
 }
 
 void IN_RescaleAnalog(int *x, int *y, int dead) {
