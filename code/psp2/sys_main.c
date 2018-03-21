@@ -39,7 +39,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
 
-int _newlib_heap_size_user = 192 * 1024 * 1024;
+int _newlib_heap_size_user = 260 * 1024 * 1024;
 
 static char binaryPath[ MAX_OSPATH ] = { 0 };
 static char installPath[ MAX_OSPATH ] = { 0 };
@@ -419,7 +419,7 @@ int main(int argc, char **argv) {
 	IN_Init(NULL);
 	
 	// We need a bigger stack to run Quake 3, so we create a new thread with a proper stack size
-	SceUID main_thread = sceKernelCreateThread("RTCW", rtcw_main, 0x40, 0x400000, 0, 0, NULL);
+	SceUID main_thread = sceKernelCreateThread("RTCW", rtcw_main, 0x40, 0x200000, 0, 0, NULL);
 	if (main_thread >= 0){
 		sceKernelStartThread(main_thread, 0, NULL);
 		sceKernelWaitThreadEnd(main_thread, NULL, NULL);
