@@ -675,12 +675,7 @@ void SV_DropClient( client_t *drop, const char *reason ) {
 
 	if ( isBot ) {
 		SV_BotFreeClient( drop - svs.clients );
-	}
 
-	// nuke user info
-	SV_SetUserinfo( drop - svs.clients, "" );
-
-	if ( isBot ) {
 		// bots shouldn't go zombie, as there's no real net connection.
 		drop->state = CS_FREE;
 	} else {
@@ -688,6 +683,9 @@ void SV_DropClient( client_t *drop, const char *reason ) {
 		drop->state = CS_ZOMBIE;		// become free in a few seconds
 	}
 
+	// nuke user info
+	SV_SetUserinfo( drop - svs.clients, "" );
+	
 	// RF, nuke reliable commands
 	SV_FreeReliableCommandsForClient( drop );
 
@@ -1905,7 +1903,7 @@ void SV_ExecuteClientMessage( client_t *cl, msg_t *msg ) {
 		}
 		// if we can tell that the client has dropped the last
 		// gamestate we sent them, resend it
-		if ( cl->messageAcknowledge > cl->gamestateMessageNum ) {
+		if ( cl->state != CS_ACTIVE && cl->messageAcknowledge > cl->gamestateMessageNum ) {
 			Com_DPrintf( "%s : dropped gamestate, resending\n", cl->name );
 			SV_SendClientGameState( cl );
 		}
