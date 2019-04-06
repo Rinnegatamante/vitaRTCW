@@ -1060,7 +1060,7 @@ void RB_SurfaceAnim( mdsSurface_t *surface ) {
 #endif
 
 	refent = &backEnd.currentEntity->e;
-	int i, *boneRefs = ( int * )( (byte *)surface + surface->ofsBoneReferences );
+	boneList = ( int * )( (byte *)surface + surface->ofsBoneReferences );
 	header = ( mdsHeader_t * )( (byte *)surface + surface->ofsHeader );
 
 	R_CalcBones( header, (const refEntity_t *)refent, boneList, surface->numBoneReferences );
@@ -1758,4 +1758,3 @@ void MC_UnCompress(float mat[3][4],const unsigned char * comp)
 	val-=1<<(MC_BITS_VECT-1);
 	mat[2][2]=((float)(val))*MC_SCALE_VECT;
 }
-
