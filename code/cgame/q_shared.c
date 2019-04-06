@@ -31,6 +31,28 @@ If you have questions concerning this license or the applicable additional terms
 // q_shared.c -- stateless support routines that are included in each code dll
 #include "q_shared.h"
 
+// ^[0-9a-zA-Z]
+qboolean Q_IsColorString(const char *p) {
+	if (!p)
+		return qfalse;
+
+	if (p[0] != Q_COLOR_ESCAPE)
+		return qfalse;
+
+	if (p[1] == 0)
+		return qfalse;
+
+	// isalnum expects a signed integer in the range -1 (EOF) to 255, or it might assert on undefined behaviour
+	// a dereferenced char pointer has the range -128 to 127, so we just need to rangecheck the negative part
+	if (p[1] < 0)
+		return qfalse;
+
+	if (isalnum(p[1]) == 0)
+		return qfalse;
+
+	return qtrue;
+}
+
 /*
 ============
 Com_Clamp
@@ -343,7 +365,7 @@ COM_BeginParseSession
 void COM_BeginParseSession( const char *name ) {
 	com_lines = 1;
 	com_tokenline = 0;
-	snprintf( com_parsename, sizeof( com_parsename ), "%s", name );
+	Com_sprintf( com_parsename, sizeof( com_parsename ), "%s", name );
 }
 
 /*
@@ -1102,7 +1124,6 @@ int Q_CountChar(const char *string, char tocount)
 	return count;
 }
 
-#ifndef __PSP2__
 int QDECL Com_sprintf(char *dest, int size, const char *fmt, ...)
 {
 	int len;
@@ -1113,11 +1134,10 @@ int QDECL Com_sprintf(char *dest, int size, const char *fmt, ...)
 	va_end( argptr );
 
 	if(len >= size)
-		Com_Printf("snprintf: Output length %d too short, requires %d bytes.\n", size, len + 1);
+		Com_Printf("Com_sprintf: Output length %d too short, requires %d bytes.\n", size, len + 1);
 	
 	return len;
 }
-#endif
 
 // Ridah, ripped from l_bsp.c
 int Q_strncasecmp( char *s1, char *s2, int n ) {
@@ -1546,7 +1566,7 @@ void Info_SetValueForKey( char *s, const char *key, const char *value ) {
 		return;
 	}
 
-	snprintf( newi, sizeof( newi ), "\\%s\\%s", key, value );
+	Com_sprintf( newi, sizeof( newi ), "\\%s\\%s", key, value );
 
 	if ( strlen( newi ) + strlen( s ) >= MAX_INFO_STRING ) {
 		Com_Printf( "Info string length exceeded\n" );
@@ -1585,7 +1605,7 @@ void Info_SetValueForKey_Big( char *s, const char *key, const char *value ) {
 	if (!value)
 		return;
 
-	snprintf( newi, sizeof( newi ), "\\%s\\%s", key, value );
+	Com_sprintf( newi, sizeof( newi ), "\\%s\\%s", key, value );
 
 	if ( strlen( newi ) + strlen( s ) >= BIG_INFO_STRING ) {
 		Com_Printf( "BIG Info string length exceeded\n" );

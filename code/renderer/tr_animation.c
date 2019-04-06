@@ -51,9 +51,6 @@ static float frontlerp, backlerp;
 static float torsoFrontlerp, torsoBacklerp;
 static int *triangles;
 static glIndex_t *pIndexes;
-#ifndef USE_OPENGLES
-static int *boneRefs;
-#endif
 static int indexes;
 static int baseIndex, baseVertex, oldIndexes;
 static int numVerts;
@@ -1050,9 +1047,6 @@ RB_SurfaceAnim
 ==============
 */
 void RB_SurfaceAnim( mdsSurface_t *surface ) {
-#ifndef USE_OPENGLES
-	int i;
-#endif
 	int j, k;
 	refEntity_t *refent;
 	int             *boneList;
@@ -1066,7 +1060,7 @@ void RB_SurfaceAnim( mdsSurface_t *surface ) {
 #endif
 
 	refent = &backEnd.currentEntity->e;
-	boneList = ( int * )( (byte *)surface + surface->ofsBoneReferences );
+	int i, *boneRefs = ( int * )( (byte *)surface + surface->ofsBoneReferences );
 	header = ( mdsHeader_t * )( (byte *)surface + surface->ofsHeader );
 
 	R_CalcBones( header, (const refEntity_t *)refent, boneList, surface->numBoneReferences );
