@@ -78,8 +78,12 @@ of OpenGL
 */
 uint16_t* indices;
 float *gVertexBuffer;
-float *gColorBuffer;
+uint8_t *gColorBuffer;
+uint8_t *gColorBuffer255;
 float *gTexCoordBuffer;
+float *gVertexBufferPtr;
+uint8_t *gColorBufferPtr;
+float *gTexCoordBufferPtr;
 uint8_t inited = 0;
 
 typedef struct vidmode_s
@@ -114,8 +118,9 @@ void GLimp_Init( qboolean coreContext)
 	glConfig.isFullscreen = qtrue;
 	
 	if (!inited){
-		vglInitExtended(0x800000, glConfig.vidWidth, glConfig.vidHeight, 0x2000000, SCE_GXM_MULTISAMPLE_4X);
+		vglInitExtended(0x100000, glConfig.vidWidth, glConfig.vidHeight, 0x2000000, SCE_GXM_MULTISAMPLE_4X);
 		vglUseVram(GL_TRUE);
+		vglMapHeapMem();
 		inited = 1;
 		cur_width = glConfig.vidWidth;
 	}else if (glConfig.vidWidth != cur_width){ // Changed resolution in game, restarting the game
@@ -127,11 +132,16 @@ void GLimp_Init( qboolean coreContext)
 	for (i=0;i<MAX_INDICES;i++){
 		indices[i] = i;
 	}
-	vglIndexPointer(GL_SHORT, 0, MAX_INDICES, indices);
+	vglIndexPointerMapped(indices);
 	glEnableClientState(GL_VERTEX_ARRAY);
-	gVertexBuffer = (float*)malloc(sizeof(float)*VERTEXARRAYSIZE);
-	gColorBuffer = (float*)malloc(sizeof(float)*VERTEXARRAYSIZE);
-	gTexCoordBuffer = (float*)malloc(sizeof(float)*VERTEXARRAYSIZE);
+	gVertexBufferPtr = (float*)malloc(0x400000);
+	gColorBufferPtr = (uint8_t*)malloc(0x200000);
+	gTexCoordBufferPtr = (float*)malloc(0x200000);
+	gColorBuffer255 = (uint8_t*)malloc(0x3000);
+	memset(gColorBuffer255, 0xFF, 0x3000);
+	gVertexBuffer = gVertexBufferPtr;
+	gColorBuffer = gColorBufferPtr;
+	gTexCoordBuffer = gTexCoordBufferPtr;
 	
 	strncpy(glConfig.vendor_string, glGetString(GL_VENDOR), sizeof(glConfig.vendor_string));
 	strncpy(glConfig.renderer_string, glGetString(GL_RENDERER), sizeof(glConfig.renderer_string));
@@ -155,5 +165,8 @@ void GLimp_EndFrame( void )
 {
 	vglStopRendering();
 	vglStartRendering();
-	vglIndexPointer(GL_SHORT, 0, MAX_INDICES, indices);
+	vglIndexPointerMapped(indices);
+	gVertexBuffer = gVertexBufferPtr;
+	gColorBuffer = gColorBufferPtr;
+	gTexCoordBuffer = gTexCoordBufferPtr;
 }

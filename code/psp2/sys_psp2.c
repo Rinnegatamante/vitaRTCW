@@ -159,8 +159,6 @@ char *Sys_GetCurrentUser(void) {
     return nick;
 }
 
-#define MEM_THRESHOLD 96*1024*1024
-
 /*
 ==================
 Sys_LowPhysicalMemory
