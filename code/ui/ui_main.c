@@ -4772,8 +4772,15 @@ static void UI_RunMenuScript( char **args ) {
 			Q_strncpyz( name, UI_Cvar_VariableString( "ui_savegame" ), MAX_NAME_LENGTH );
 
 			if ( !strlen( name ) ) {
+#ifdef __PSP2__
+				trap_Cvar_Set( "ui_savegame", "vitaRTCW" );
+				Q_strncpyz( name, UI_Cvar_VariableString( "ui_savegame" ), MAX_NAME_LENGTH );
+			}
+			{
+#else
 				Menus_OpenByName( "save_name_popmenu" );
 			} else {
+#endif
 				// find out if there's an existing savegame with that name
 				for ( i = 0; i < uiInfo.savegameCount; i++ ) {
 					if ( Q_stricmp( name, uiInfo.savegameList[uiInfo.savegameStatus.displaySavegames[i]].savegameName ) == 0 ) {
@@ -4790,8 +4797,14 @@ static void UI_RunMenuScript( char **args ) {
 			// save with no confirm for overwrite
 		} else if ( Q_stricmp( name, "Savegame2" ) == 0 ) {
 			if ( !strlen( name ) ) {
+#ifdef __PSP2__
+				trap_Cvar_Set( "ui_savegame", "vitaRTCW" );
+			}
+			{
+#else
 				Menus_OpenByName( "save_name_popmenu" );
 			} else {
+#endif
 				trap_Cmd_ExecuteText( EXEC_APPEND, va( "savegame %s\n", UI_Cvar_VariableString( "ui_savegame" ) ) );
 				Menus_CloseAll();
 			}
