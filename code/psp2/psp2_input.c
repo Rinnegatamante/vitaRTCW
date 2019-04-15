@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../client/client.h"
 #include "../sys/sys_local.h"
 
-static hires_x, hires_y;
+static int hires_x, hires_y;
 /*
 ===============
 IN_Frame
@@ -59,11 +59,11 @@ void Sys_SetKeys(uint32_t keys, int time){
 	if((keys & SCE_CTRL_CIRCLE) != (oldkeys & SCE_CTRL_CIRCLE))
 		Key_Event(K_AUX2, (keys & SCE_CTRL_CIRCLE) == SCE_CTRL_CIRCLE, time);
 	if((keys & SCE_CTRL_CROSS) != (oldkeys & SCE_CTRL_CROSS))
-		Key_Event(K_AUX1, (keys & SCE_CTRL_CROSS) == SCE_CTRL_CROSS, time);
+		Key_Event(K_MOUSE1, (keys & SCE_CTRL_CROSS) == SCE_CTRL_CROSS, time);
 	if((keys & SCE_CTRL_LTRIGGER) != (oldkeys & SCE_CTRL_LTRIGGER))
 		Key_Event(K_AUX5, (keys & SCE_CTRL_LTRIGGER) == SCE_CTRL_LTRIGGER, time);
 	if((keys & SCE_CTRL_RTRIGGER) != (oldkeys & SCE_CTRL_RTRIGGER))
-		Key_Event(K_MOUSE1, (keys & SCE_CTRL_RTRIGGER) == SCE_CTRL_RTRIGGER, time);
+		Key_Event(K_AUX6, (keys & SCE_CTRL_RTRIGGER) == SCE_CTRL_RTRIGGER, time);
 }
 
 void IN_RescaleAnalog(int *x, int *y, int dead) {
@@ -90,6 +90,8 @@ void IN_RescaleAnalog(int *x, int *y, int dead) {
 #define LANALOG_UP    0x04
 #define LANALOG_DOWN  0x08
 
+int old_x = - 1, old_y;
+
 void IN_Frame( void )
 {
 	SceCtrlData keys;
@@ -98,6 +100,15 @@ void IN_Frame( void )
 	if(keys.buttons != oldkeys)
 		Sys_SetKeys(keys.buttons, time);
 	oldkeys = keys.buttons;
+	
+	// Emulating mouse with touch
+	SceTouchData touch;
+	sceTouchPeek(SCE_TOUCH_PORT_FRONT, &touch, 1);
+	if (touch.reportNum > 0){
+		if (old_x != -1) Com_QueueEvent(time, SE_MOUSE, (touch.report[0].x - old_x), (touch.report[0].y - old_y), 0, NULL);
+		old_x = touch.report[0].x;
+		old_y = touch.report[0].y;
+	}else old_x = -1;
 	
 	// Emulating mouse with right analog
 	int right_x = (keys.rx - 127) * 256;
@@ -141,6 +152,7 @@ IN_Init
 void IN_Init( void *windowData )
 {
 	sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
+	sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, SCE_TOUCH_SAMPLING_STATE_START);
 }
 
 /*
