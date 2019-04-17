@@ -495,6 +495,9 @@ int rtcw_main( int argc, char **argv )
 
 	while( 1 )
 	{
+		// Prevent screen power-off
+		sceKernelPowerTick(0);
+		
 		Com_Frame( );
 	}
 
