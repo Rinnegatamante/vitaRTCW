@@ -118,7 +118,7 @@ void IN_Frame( void )
 	hires_y += right_y;
 	if (hires_x != 0 || hires_y != 0) {
 		// increase slowdown variable to slow down aiming, could be made user-adjustable
-		int slowdown = 2048;
+		int slowdown = 1024;
 		Com_QueueEvent(time, SE_MOUSE, hires_x / slowdown, hires_y / slowdown, 0, NULL);
 		hires_x %= slowdown;
 		hires_y %= slowdown;
