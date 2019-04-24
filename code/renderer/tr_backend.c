@@ -1120,7 +1120,9 @@ void RE_StretchRaw( int x, int y, int w, int h, int cols, int rows, const byte *
 
 	// we definately want to sync every frame for the cinematics
 	qglFinish();
-
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
+	
 	start = 0;
 	if ( r_speeds->integer ) {
 		start = ri.Milliseconds();
@@ -1145,7 +1147,7 @@ void RE_StretchRaw( int x, int y, int w, int h, int cols, int rows, const byte *
 	}
 
 	RB_SetGL2D();
-
+	
 	qglColor3f( tr.identityLight, tr.identityLight, tr.identityLight );
 
 	float texcoords[] = {
@@ -1175,7 +1177,7 @@ void RE_UploadCinematic( int w, int h, int cols, int rows, const byte *data, int
 	if ( cols != tr.scratchImage[client]->width || rows != tr.scratchImage[client]->height ) {
 		tr.scratchImage[client]->width = tr.scratchImage[client]->uploadWidth = cols;
 		tr.scratchImage[client]->height = tr.scratchImage[client]->uploadHeight = rows;
-		qglTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
+		qglTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
 		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
@@ -1184,7 +1186,7 @@ void RE_UploadCinematic( int w, int h, int cols, int rows, const byte *data, int
 		if ( dirty ) {
 			// otherwise, just subimage upload it so that drivers can tell we are going to be changing
 			// it and don't try and do a texture compression
-			qglTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, cols, rows, GL_RGBA, GL_UNSIGNED_BYTE, data );
+			qglTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
 		}
 	}
 }
@@ -1405,7 +1407,9 @@ const void  *RB_DrawBuffer( const void *data ) {
 	const drawBufferCommand_t   *cmd;
 
 	cmd = (const drawBufferCommand_t *)data;
-
+#ifndef __PSP2__
+	qglDrawBuffer( cmd->buffer );
+#endif
 	// clear screen for debugging
 	if ( r_clear->integer ) {
 		qglClearColor( 1, 0, 0.5, 1 );
