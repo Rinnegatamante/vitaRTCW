@@ -974,7 +974,7 @@ static void Upload32(   unsigned *data,
 	qglTexImage2D( GL_TEXTURE_2D, 0, internalFormat, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scaledBuffer );
 
 	if ( mipmap ) {
-		int miplevel;
+		/*int miplevel;
 
 		miplevel = 0;
 		while ( scaled_width > 1 || scaled_height > 1 )
@@ -994,8 +994,8 @@ static void Upload32(   unsigned *data,
 				R_BlendOverTexture( (byte *)scaledBuffer, scaled_width * scaled_height, mipBlendColors[miplevel] );
 			}
 
-			//glGenerateMipmap(GL_TEXTURE_2D);
-		}
+		}*/
+		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 done:
 
