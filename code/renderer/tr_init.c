@@ -1048,7 +1048,7 @@ void R_Register( void ) {
 	r_zfar = ri.Cvar_Get( "r_zfar", "0", CVAR_CHEAT );
 //----(SA)	end
 	r_ignoreGLErrors = ri.Cvar_Get( "r_ignoreGLErrors", "1", CVAR_ARCHIVE );
-	r_fastsky = ri.Cvar_Get( "r_fastsky", "1", CVAR_ARCHIVE );
+	r_fastsky = ri.Cvar_Get( "r_fastsky", "0", CVAR_ARCHIVE );
 	r_inGameVideo = ri.Cvar_Get( "r_inGameVideo", "1", CVAR_ARCHIVE );
 	r_drawSun = ri.Cvar_Get( "r_drawSun", "1", CVAR_ARCHIVE );
 	r_dynamiclight = ri.Cvar_Get( "r_dynamiclight", "0", CVAR_ARCHIVE );
@@ -1094,7 +1094,7 @@ void R_Register( void ) {
 	r_bonesDebug = ri.Cvar_Get( "r_bonesDebug", "0", CVAR_CHEAT );
 
 	// Rafael - wolf fog
-	r_wolffog = ri.Cvar_Get( "r_wolffog", "0", 0 );
+	r_wolffog = ri.Cvar_Get( "r_wolffog", "1", 0 );
 	// done
 
 	r_nocurves = ri.Cvar_Get( "r_nocurves", "0", CVAR_CHEAT );
@@ -1129,9 +1129,9 @@ void R_Register( void ) {
 	r_offsetUnits = ri.Cvar_Get( "r_offsetunits", "-2", CVAR_CHEAT );
 	r_drawBuffer = ri.Cvar_Get( "r_drawBuffer", "GL_BACK", CVAR_CHEAT );
 	r_lockpvs = ri.Cvar_Get( "r_lockpvs", "0", CVAR_CHEAT );
-	r_noportals = ri.Cvar_Get( "r_noportals", "1", CVAR_CHEAT );
+	r_noportals = ri.Cvar_Get( "r_noportals", "0", CVAR_CHEAT );
 	r_shadows = ri.Cvar_Get( "cg_shadows", "1", 0 );
-	r_portalsky = ri.Cvar_Get( "cg_skybox", "0", 0 );
+	r_portalsky = ri.Cvar_Get( "cg_skybox", "1", 0 );
 
 	r_marksOnTriangleMeshes = ri.Cvar_Get("r_marksOnTriangleMeshes", "0", CVAR_ARCHIVE);
 

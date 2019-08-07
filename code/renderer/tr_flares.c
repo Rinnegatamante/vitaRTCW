@@ -591,7 +591,7 @@ void RB_RenderFlares( void ) {
 	}
 
 	if ( backEnd.viewParms.isPortal ) {
-		//->qglDisable( GL_CLIP_PLANE0 );
+		glDisable( GL_CLIP_PLANE0 );
 	}
 
 	qglPushMatrix();

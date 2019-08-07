@@ -521,10 +521,10 @@ void RB_BeginDrawingView( void ) {
 		plane2[3] = DotProduct( plane, backEnd.viewParms.or.origin ) - plane[3];
 
 		qglLoadMatrixf( s_flipMatrix );
-		//->qglClipPlane( GL_CLIP_PLANE0, plane2 );
-		//->qglEnable( GL_CLIP_PLANE0 );
+		glClipPlane( GL_CLIP_PLANE0, plane2 );
+		qglEnable( GL_CLIP_PLANE0 );
 	} else {
-		//->qglDisable( GL_CLIP_PLANE0 );
+		glDisable( GL_CLIP_PLANE0 );
 	}
 }
 
@@ -1085,10 +1085,10 @@ void    RB_SetGL2D( void ) {
 			  GLS_SRCBLEND_SRC_ALPHA |
 			  GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA );
 
-	//->qglDisable( GL_FOG ); //----(SA)	added
+	glDisable( GL_FOG ); //----(SA)	added
 
 	GL_Cull( CT_TWO_SIDED );
-	//->qglDisable( GL_CLIP_PLANE0 );
+	glDisable( GL_CLIP_PLANE0 );
 
 	// set time for 2D shaders
 	backEnd.refdef.time = ri.Milliseconds();
