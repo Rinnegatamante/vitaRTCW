@@ -82,11 +82,36 @@ void R_Fog( glfog_t *curfog ) {
 	if ( !curfog->density ) {
 		curfog->density = 1;
 	}
+	
+	if ( !curfog->mode ) {		
+		curfog->mode = GL_LINEAR;		
+	}
 	//----(SA)	end
 
 
 	R_FogOn();
+	
+	glFogi( GL_FOG_MODE, curfog->mode );
+	glFogfv( GL_FOG_COLOR, curfog->color );
+	glFogf( GL_FOG_DENSITY, curfog->density );
 
+	if ( backEnd.refdef.rdflags & RDF_SNOOPERVIEW ) {
+		glFogf( GL_FOG_START, curfog->end );       // snooper starts GL fog out further
+	} else {
+		glFogf( GL_FOG_START, curfog->start );
+	}
+	
+	if ( r_zfar->value ) {             // (SA) allow override for helping level designers test fog distances
+		glFogf( GL_FOG_END, r_zfar->value );
+	} else {
+		if ( backEnd.refdef.rdflags & RDF_SNOOPERVIEW ) {
+			glFogf( GL_FOG_END, curfog->end + 1000 );      // snooper ends GL fog out further.  this works fine with our maps, but could be 'funky' with later maps
+		}
+		else {
+			glFogf( GL_FOG_END, curfog->end );
+		}
+	}
+	
 	qglClearColor( curfog->color[0], curfog->color[1], curfog->color[2], curfog->color[3] );
 
 
@@ -97,6 +122,7 @@ void R_FogOff( void ) {
 	if ( !fogIsOn ) {
 		return;
 	}
+	qglDisable( GL_FOG );
 	fogIsOn = qfalse;
 }
 
@@ -132,6 +158,7 @@ void R_FogOn( void ) {
 		return;
 	}
 
+	qglEnable( GL_FOG );
 	fogIsOn = qtrue;
 }
 // done.
@@ -178,6 +205,7 @@ void R_SetFog( int fogvar, int var1, int var2, float r, float g, float b, float 
 			glfogsettings[fogvar].density       = 1.0;
 		} else
 		{
+			glfogsettings[fogvar].mode          = GL_EXP;
 			glfogsettings[fogvar].drawsky       = qtrue;
 			glfogsettings[fogvar].clearscreen   = qfalse;
 			glfogsettings[fogvar].density       = density;
@@ -579,6 +607,92 @@ R_SetFrameFog
 ==============
 */
 void R_SetFrameFog( void ) {
+	if ( r_speeds->integer == 5 ) {		
+		if ( !glfogsettings[FOG_TARGET].registered ) {		
+			ri.Printf( PRINT_ALL, "no fog - calc zFar: %0.1f\n", tr.viewParms.zFar );		
+			return;		
+		}		
+	}		
+			
+	// still fading		
+	if ( glfogsettings[FOG_TARGET].finishTime && glfogsettings[FOG_TARGET].finishTime >= tr.refdef.time ) {		
+		float lerpPos;		
+		int fadeTime;		
+			
+		// transitioning from density to distance		
+		if ( glfogsettings[FOG_LAST].mode == GL_EXP && glfogsettings[FOG_TARGET].mode == GL_LINEAR ) {		
+			// for now just fast transition to the target when dissimilar fogs are		
+			memcpy( &glfogsettings[FOG_CURRENT], &glfogsettings[FOG_TARGET], sizeof( glfog_t ) );		
+			glfogsettings[FOG_TARGET].finishTime = 0;		
+		}		
+		// transitioning from distance to density		
+		else if ( glfogsettings[FOG_LAST].mode == GL_LINEAR && glfogsettings[FOG_TARGET].mode == GL_EXP ) {		
+			memcpy( &glfogsettings[FOG_CURRENT], &glfogsettings[FOG_TARGET], sizeof( glfog_t ) );		
+			glfogsettings[FOG_TARGET].finishTime = 0;		
+		}		
+		// transitioning like fog modes		
+		else {		
+			
+			fadeTime = glfogsettings[FOG_TARGET].finishTime - glfogsettings[FOG_TARGET].startTime;		
+			if ( fadeTime <= 0 ) {		
+				fadeTime = 1;   // avoid divide by zero		
+		
+			
+			}		
+			lerpPos = (float)( tr.refdef.time - glfogsettings[FOG_TARGET].startTime ) / (float)fadeTime;		
+			if ( lerpPos > 1 ) {		
+				lerpPos = 1;		
+			}		
+			
+			// lerp near/far		
+			glfogsettings[FOG_CURRENT].start        = glfogsettings[FOG_LAST].start + ( ( glfogsettings[FOG_TARGET].start - glfogsettings[FOG_LAST].start ) * lerpPos );		
+			glfogsettings[FOG_CURRENT].end          = glfogsettings[FOG_LAST].end + ( ( glfogsettings[FOG_TARGET].end - glfogsettings[FOG_LAST].end ) * lerpPos );		
+			
+			// lerp color		
+			glfogsettings[FOG_CURRENT].color[0]     = glfogsettings[FOG_LAST].color[0] + ( ( glfogsettings[FOG_TARGET].color[0] - glfogsettings[FOG_LAST].color[0] ) * lerpPos );		
+			glfogsettings[FOG_CURRENT].color[1]     = glfogsettings[FOG_LAST].color[1] + ( ( glfogsettings[FOG_TARGET].color[1] - glfogsettings[FOG_LAST].color[1] ) * lerpPos );		
+			glfogsettings[FOG_CURRENT].color[2]     = glfogsettings[FOG_LAST].color[2] + ( ( glfogsettings[FOG_TARGET].color[2] - glfogsettings[FOG_LAST].color[2] ) * lerpPos );		
+			
+			glfogsettings[FOG_CURRENT].density      = glfogsettings[FOG_TARGET].density;		
+			glfogsettings[FOG_CURRENT].mode         = glfogsettings[FOG_TARGET].mode;		
+			glfogsettings[FOG_CURRENT].registered   = qtrue;		
+			
+			// if either fog in the transition clears the screen, clear the background this frame to avoid hall of mirrors		
+			glfogsettings[FOG_CURRENT].clearscreen  = ( glfogsettings[FOG_TARGET].clearscreen || glfogsettings[FOG_LAST].clearscreen );		
+		}		
+			
+		glfogsettings[FOG_CURRENT].dirty = 1;		
+	} else {		
+		// potential FIXME: since this is the most common occurance, diff first and only set changes		
+//		if(glfogsettings[FOG_CURRENT].dirty) {		
+		memcpy( &glfogsettings[FOG_CURRENT], &glfogsettings[FOG_TARGET], sizeof( glfog_t ) );		
+		glfogsettings[FOG_CURRENT].dirty = 0;		
+//		}		
+	}		
+			
+			
+	// shorten the far clip if the fog opaque distance is closer than the procedural farcip dist		
+		
+	if ( glfogsettings[FOG_CURRENT].mode == GL_LINEAR ) {		
+		if ( glfogsettings[FOG_CURRENT].end < tr.viewParms.zFar ) {		
+			tr.viewParms.zFar = glfogsettings[FOG_CURRENT].end;		
+		}		
+		if ( backEnd.refdef.rdflags & RDF_SNOOPERVIEW ) {		
+			tr.viewParms.zFar += 1000;  // zfar out slightly further for snooper.  this works fine with our maps, but could be 'funky' with later maps		
+			
+		}		
+	}		
+//	else		
+//		glfogsettings[FOG_CURRENT].end = 5;		
+			
+			
+	if ( r_speeds->integer == 5 ) {		
+		if ( glfogsettings[FOG_CURRENT].mode == GL_LINEAR ) {		
+			ri.Printf( PRINT_ALL, "farclip fog - den: %0.1f  calc zFar: %0.1f  fog zfar: %0.1f\n", glfogsettings[FOG_CURRENT].density, tr.viewParms.zFar, glfogsettings[FOG_CURRENT].end );		
+		} else {		
+			ri.Printf( PRINT_ALL, "density fog - den: %0.6f  calc zFar: %0.1f  fog zFar: %0.1f\n", glfogsettings[FOG_CURRENT].density, tr.viewParms.zFar, glfogsettings[FOG_CURRENT].end );		
+		}		
+	}
 }
 
 

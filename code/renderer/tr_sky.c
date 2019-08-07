@@ -920,7 +920,6 @@ void RB_StageIteratorSky( void ) {
 	}
 
 	// does the current fog require fastsky?
-#ifndef __PSP2__
 	if ( backEnd.viewParms.glFog.registered ) {
 		if ( !backEnd.viewParms.glFog.drawsky ) {
 			return;
@@ -930,7 +929,6 @@ void RB_StageIteratorSky( void ) {
 			return;
 		}
 	}
-#endif
 
 	backEnd.refdef.rdflags |= RDF_DRAWINGSKY;
 
