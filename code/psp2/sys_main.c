@@ -488,6 +488,14 @@ int rtcw_main( int argc, char **argv )
 	sceIoMkdir(DEFAULT_BASEDIR, 777);
 	Sys_SetBinaryPath( DEFAULT_BASEDIR );
 	Sys_SetDefaultInstallPath( DEFAULT_BASEDIR );
+	
+	sceAppUtilInit(&(SceAppUtilInitParam){}, &(SceAppUtilBootParam){});
+	SceAppUtilAppEventParam eventParam;
+	memset(&eventParam, 0, sizeof(SceAppUtilAppEventParam));
+	sceAppUtilReceiveAppEvent(&eventParam);
+	if (eventParam.type == 0x05){
+		sceAppMgrLoadExec("app0:/mp_eboot.bin", NULL, NULL);
+	}
 
 	CON_Init( );
 	Com_Init( commandLine );
