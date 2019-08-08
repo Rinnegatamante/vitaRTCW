@@ -45,7 +45,7 @@ int demo_protocols[] =
 
 #define MIN_DEDICATED_COMHUNKMEGS 1
 #define MIN_COMHUNKMEGS 128 // JPW NERVE changed this to 42 for MP, was 56 for team arena and 75 for wolfSP
-#define DEF_COMHUNKMEGS 256 // RF, increased this, some maps are exceeding 56mb // JPW NERVE changed this for multiplayer back to 42, 56 for depot/mp_cpdepot, 42 for everything else
+#define DEF_COMHUNKMEGS 128 // RF, increased this, some maps are exceeding 56mb // JPW NERVE changed this for multiplayer back to 42, 56 for depot/mp_cpdepot, 42 for everything else
 #define DEF_COMZONEMEGS 32 // JPW NERVE cut this back too was 30
 #define DEF_COMHUNKMEGS_S	XSTRING(DEF_COMHUNKMEGS)
 #define DEF_COMZONEMEGS_S	XSTRING(DEF_COMZONEMEGS)
@@ -2569,10 +2569,6 @@ static void Com_WriteCDKey( const char *filename, const char *ikey ) {
 		return;
 	}
 
-#ifndef _WIN32
-	savedumask = umask(0077);
-#endif
-
 	f = FS_SV_FOpenFileWrite( fbuffer );
 	if ( !f ) {
 		Com_Printf ("Couldn't write CD key to %s.\n", fbuffer );
@@ -2590,11 +2586,7 @@ static void Com_WriteCDKey( const char *filename, const char *ikey ) {
 #endif
 	FS_FCloseFile( f );
 out:
-#ifndef _WIN32
-	umask(savedumask);
-#else
 	;
-#endif
 }
 #endif
 

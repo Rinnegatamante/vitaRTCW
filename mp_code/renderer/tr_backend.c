@@ -77,7 +77,7 @@ void GL_SelectTexture( int unit ) {
 		return;
 	}
 
-	if ( unit == 0 ) {
+	/*if ( unit == 0 ) {
 		qglActiveTextureARB( GL_TEXTURE0_ARB );
 		GLimp_LogComment( "glActiveTextureARB( GL_TEXTURE0_ARB )\n" );
 		qglClientActiveTextureARB( GL_TEXTURE0_ARB );
@@ -89,39 +89,10 @@ void GL_SelectTexture( int unit ) {
 		GLimp_LogComment( "glClientActiveTextureARB( GL_TEXTURE1_ARB )\n" );
 	} else {
 		ri.Error( ERR_DROP, "GL_SelectTexture: unit = %i", unit );
-	}
+	}*/
 
 	glState.currenttmu = unit;
 }
-
-
-/*
-** GL_BindMultitexture
-*/
-void GL_BindMultitexture( image_t *image0, GLuint env0, image_t *image1, GLuint env1 ) {
-	int texnum0, texnum1;
-
-	texnum0 = image0->texnum;
-	texnum1 = image1->texnum;
-
-	if ( r_nobind->integer && tr.dlightImage ) {        // performance evaluation option
-		texnum0 = texnum1 = tr.dlightImage->texnum;
-	}
-
-	if ( glState.currenttextures[1] != texnum1 ) {
-		GL_SelectTexture( 1 );
-		image1->frameUsed = tr.frameCount;
-		glState.currenttextures[1] = texnum1;
-		qglBindTexture( GL_TEXTURE_2D, texnum1 );
-	}
-	if ( glState.currenttextures[0] != texnum0 ) {
-		GL_SelectTexture( 0 );
-		image0->frameUsed = tr.frameCount;
-		glState.currenttextures[0] = texnum0;
-		qglBindTexture( GL_TEXTURE_2D, texnum0 );
-	}
-}
-
 
 /*
 ** GL_Cull
@@ -166,16 +137,16 @@ void GL_TexEnv( int env ) {
 	switch ( env )
 	{
 	case GL_MODULATE:
-		qglTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
+		qglTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 		break;
 	case GL_REPLACE:
-		qglTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
+		qglTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
 		break;
 	case GL_DECAL:
-		qglTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL );
+		qglTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL );
 		break;
 	case GL_ADD:
-		qglTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_ADD );
+		qglTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_ADD );
 		break;
 	default:
 		ri.Error( ERR_DROP, "GL_TexEnv: invalid env '%d' passed", env );
@@ -304,14 +275,12 @@ void GL_State( unsigned long stateBits ) {
 	// fill/line mode
 	//
 	if ( diff & GLS_POLYMODE_LINE ) {
-#ifndef USE_OPENGLES
 		if ( stateBits & GLS_POLYMODE_LINE ) {
 			qglPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 		} else
 		{
 			qglPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 		}
-#endif
 	}
 
 	//
@@ -546,7 +515,7 @@ void RB_BeginDrawingView( void ) {
 		plane2[3] = DotProduct( plane, backEnd.viewParms.or.origin ) - plane[3];
 
 		qglLoadMatrixf( s_flipMatrix );
-		qglClipPlane( GL_CLIP_PLANE0, plane2 );
+		glClipPlane( GL_CLIP_PLANE0, plane2 );
 		qglEnable( GL_CLIP_PLANE0 );
 	} else {
 		qglDisable( GL_CLIP_PLANE0 );
@@ -807,6 +776,8 @@ void RE_StretchRaw( int x, int y, int w, int h, int cols, int rows, const byte *
 
 	// we definately want to sync every frame for the cinematics
 	qglFinish();
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
 
 	start = 0;
 	if ( r_speeds->integer ) {
@@ -834,42 +805,22 @@ void RE_StretchRaw( int x, int y, int w, int h, int cols, int rows, const byte *
 
 	qglColor3f( tr.identityLight, tr.identityLight, tr.identityLight );
 
-#ifdef USE_OPENGLES
-	GLfloat tex[] = {
-	 0.5f / cols,  0.5f / rows,
-	 ( cols - 0.5f ) / cols ,  0.5f / rows,
-	 ( cols - 0.5f ) / cols, ( rows - 0.5f ) / rows,
-	 0.5f / cols, ( rows - 0.5f ) / rows };
-	GLfloat vtx[] = {
-	 x, y,
-	 x+w, y,
-	 x+w, y+h,
-	 x, y+h };
-	GLboolean text = qglIsEnabled(GL_TEXTURE_COORD_ARRAY);
-	GLboolean glcol = qglIsEnabled(GL_COLOR_ARRAY);
-	if (glcol)
-		qglDisableClientState(GL_COLOR_ARRAY);
-	if (!text)
-		qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
-	qglTexCoordPointer( 2, GL_FLOAT, 0, tex );
-	qglVertexPointer  ( 2, GL_FLOAT, 0, vtx );
-	qglDrawArrays( GL_TRIANGLE_FAN, 0, 4 );
-	if (!text)
-		qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
-	if (glcol)
-		qglEnableClientState(GL_COLOR_ARRAY);
-#else
-	qglBegin( GL_QUADS );
-	qglTexCoord2f( 0.5f / cols,  0.5f / rows );
-	qglVertex2f( x, y );
-	qglTexCoord2f( ( cols - 0.5f ) / cols,  0.5f / rows );
-	qglVertex2f( x + w, y );
-	qglTexCoord2f( ( cols - 0.5f ) / cols, ( rows - 0.5f ) / rows );
-	qglVertex2f( x + w, y + h );
-	qglTexCoord2f( 0.5f / cols, ( rows - 0.5f ) / rows );
-	qglVertex2f( x, y + h );
-	qglEnd();
-#endif
+	float texcoords[] = {
+		0.5f / cols,  0.5f / rows,
+		( cols - 0.5f ) / cols ,  0.5f / rows,
+		( cols - 0.5f ) / cols, ( rows - 0.5f ) / rows,
+		0.5f / cols, ( rows - 0.5f ) / rows
+	};
+	float vertices[] = {
+		x, y, 0.0f,
+		x+w, y, 0.0f,
+		x+w, y+h, 0.0f,
+		x, y+h, 0.0f
+	};
+	
+	vglVertexPointer(3, GL_FLOAT, 0, 4, vertices);
+	vglTexCoordPointer(2, GL_FLOAT, 0, 4, texcoords);
+	vglDrawObjects(GL_TRIANGLE_FAN, 4, GL_TRUE);
 }
 
 
@@ -881,20 +832,16 @@ void RE_UploadCinematic( int w, int h, int cols, int rows, const byte *data, int
 	if ( cols != tr.scratchImage[client]->width || rows != tr.scratchImage[client]->height ) {
 		tr.scratchImage[client]->width = tr.scratchImage[client]->uploadWidth = cols;
 		tr.scratchImage[client]->height = tr.scratchImage[client]->uploadHeight = rows;
-#ifdef USE_OPENGLES
-		qglTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
-#else
-		qglTexImage2D( GL_TEXTURE_2D, 0, 3, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
-#endif
-		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, haveClampToEdge ? GL_CLAMP_TO_EDGE : GL_CLAMP );
-		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, haveClampToEdge ? GL_CLAMP_TO_EDGE : GL_CLAMP );
+		qglTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
+		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 	} else {
 		if ( dirty ) {
 			// otherwise, just subimage upload it so that drivers can tell we are going to be changing
 			// it and don't try and do a texture compression
-			qglTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, cols, rows, GL_RGBA, GL_UNSIGNED_BYTE, data );
+			qglTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
 		}
 	}
 }
@@ -1199,7 +1146,7 @@ const void  *RB_DrawBuffer( const void *data ) {
 
 	cmd = (const drawBufferCommand_t *)data;
 
-#ifndef USE_OPENGLES
+#ifndef __PSP2__
 	qglDrawBuffer( cmd->buffer );
 #endif
 
@@ -1254,43 +1201,23 @@ void RB_ShowImages( void ) {
 			h *= image->uploadHeight / 512.0f;
 		}
 
-#ifdef USE_OPENGLES
-		GLfloat tex[] = {
-		 0, 0, 
-		 1, 0,
-		 1, 1, 
-		 0, 1 };
-		GLfloat vtx[] = {
-		 x, y,
-		 x + w, y,
-		 x + w, y + h,
-		 x, y + h };
-		GLboolean text = qglIsEnabled(GL_TEXTURE_COORD_ARRAY);
-		GLboolean glcol = qglIsEnabled(GL_COLOR_ARRAY);
-		if (glcol)
-			qglDisableClientState(GL_COLOR_ARRAY);
-		if (!text)
-			qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
-		qglTexCoordPointer( 2, GL_FLOAT, 0, tex );
-		qglVertexPointer  ( 2, GL_FLOAT, 0, vtx );
-		qglDrawArrays( GL_TRIANGLE_FAN, 0, 4 );
-		if (glcol)
-			qglEnableClientState(GL_COLOR_ARRAY);
-		if (!text)
-			qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
-#else
 		GL_Bind( image );
-		qglBegin( GL_QUADS );
-		qglTexCoord2f( 0, 0 );
-		qglVertex2f( x, y );
-		qglTexCoord2f( 1, 0 );
-		qglVertex2f( x + w, y );
-		qglTexCoord2f( 1, 1 );
-		qglVertex2f( x + w, y + h );
-		qglTexCoord2f( 0, 1 );
-		qglVertex2f( x, y + h );
-		qglEnd();
-#endif
+
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	
+		float texcoord[] = {
+			0, 0, 1, 0, 1, 1, 0, 1
+		};
+		float vertex[] = {
+			x, y, 0.0f,
+			x+w, y, 0.0f,
+			x+w, y+h, 0.0f,
+			x, y+h, 0.0f
+		};
+	
+		vglVertexPointer(3, GL_FLOAT, 0, 4, vertex);
+		vglTexCoordPointer(2, GL_FLOAT, 0, 4, texcoord);
+		vglDrawObjects(GL_TRIANGLE_FAN, 4, GL_TRUE);
 	}
 
 	qglFinish();
@@ -1360,7 +1287,7 @@ const void  *RB_SwapBuffers( const void *data ) {
 
 	// we measure overdraw by reading back the stencil buffer and
 	// counting up the number of increments that have happened
-#ifndef USE_OPENGLES
+#ifndef __PSP2__
 	if ( r_measureOverdraw->integer ) {
 		int i;
 		long sum = 0;

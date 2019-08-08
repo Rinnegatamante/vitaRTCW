@@ -347,18 +347,18 @@ typedef struct vidmode_s
 // Note: Also add these modes to ui/ui_shared.c  
 vidmode_t r_vidModes[] =
 {
-	{ "Mode  0:   320x240   (4:3)",     320,     240,    1 },
-	{ "Mode  1:   400x300   (4:3)",     400,     300,    1 },
-	{ "Mode  2:   512x384   (4:3)",     512,     384,    1 },
-	{ "Mode  3:   640x480   (4:3)",     640,     480,    1 },
-	{ "Mode  4:   800x600   (4:3)",     800,     600,    1 },
-	{ "Mode  5:   960x720   (4:3)",     960,     720,    1 },
-	{ "Mode  6:  1024x768   (4:3)",    1024,     768,    1 },
-	{ "Mode  7:  1152x864   (4:3)",    1152,     864,    1 },
-	{ "Mode  8: 1280x1024   (5:4)",    1280,    1024,    1 },
-	{ "Mode  9: 1600x1200   (4:3)",    1600,    1200,    1 },
-	{ "Mode 10: 2048x1536   (4:3)",    2048,    1536,    1 },
-	{ "Mode 11:   856x480  (16:9)",     856,     480,    1 },
+	{ "Mode  0: 480x272",		480,	272,	1 },
+	{ "Mode  1: 640x368",		640,	368,	1 },
+	{ "Mode  2: 720x408",		720,	408,	1 },
+	{ "Mode  3: 960x544",		960,	544,	1 },
+	{ "Mode  4: 960x544",		960,	544,	1 },
+	{ "Mode  5: 960x544",		960,	544,	1 },
+	{ "Mode  6: 960x544",		960,	544,	1 },
+	{ "Mode  7: 960x544",		960,	544,	1 },
+	{ "Mode  8: 960x544",		960,	544,	1 },
+	{ "Mode  9: 960x544",		960,	544,	1 },
+	{ "Mode 10: 960x544",		960,	544,	1 },
+	{ "Mode 11: 960x544", 		960, 	544, 	1 },
 	{ "Mode 12:   640x360  (16:9)",     640,     360,    1 },
 	{ "Mode 13:   640x400 (16:10)",     640,     400,    1 },
 	{ "Mode 14:   800x450  (16:9)",     800,     450,    1 },
@@ -461,41 +461,7 @@ Return value must be freed with ri.Hunk_FreeTempMemory()
 
 byte *RB_ReadPixels(int x, int y, int width, int height, size_t *offset, int *padlen)
 {
-	byte *buffer, *bufstart;
-	int padwidth, linelen;
-	GLint packAlign;
-	
-	qglGetIntegerv(GL_PACK_ALIGNMENT, &packAlign);
-	
-	linelen = width * 3;
-	padwidth = PAD(linelen, packAlign);
-	
-	// Allocate a few more bytes so that we can choose an alignment we like
-	buffer = ri.Hunk_AllocateTempMemory(padwidth * height + *offset + packAlign - 1);
-
-#ifdef USE_OPENGLES
-	bufstart=buffer;
-	padwidth=linelen;
-	int p2width=1, p2height=1;
-	int xx, yy, aa;
-	while (p2width<glConfig.vidWidth) p2width*=2;
-	while (p2height<glConfig.vidHeight) p2height*=2;
-	byte *source = (byte*) ri.Z_Malloc( p2width * p2height * 4 );
-	qglReadPixels( 0, 0, p2width, p2height, GL_RGBA, GL_UNSIGNED_BYTE, source );
-	for (yy=y; yy<height; yy++)
-		for (xx=x; xx<width; xx++)
-			for (aa=0; aa<3; aa++)
-				buffer[yy*width*3+xx*3+aa]=source[(yy+y)*p2width*4+(xx+x)*4+aa];
-	ri.Free(source);
-#else
-	bufstart = PADP((intptr_t) buffer + *offset, packAlign);
-	qglReadPixels(x, y, width, height, GL_RGB, GL_UNSIGNED_BYTE, bufstart);
-#endif
-	
-	*offset = bufstart - buffer;
-	*padlen = padwidth - linelen;
-	
-	return buffer;
+	return NULL;
 }
 
 /* 
@@ -868,74 +834,7 @@ RB_TakeVideoFrameCmd
 */
 const void *RB_TakeVideoFrameCmd( const void *data )
 {
-	const videoFrameCommand_t	*cmd;
-	byte				*cBuf;
-	size_t				memcount, linelen;
-	int				padwidth, avipadwidth, padlen, avipadlen;
-	GLint packAlign;
-	
-	cmd = (const videoFrameCommand_t *)data;
-	
-	qglGetIntegerv(GL_PACK_ALIGNMENT, &packAlign);
-
-	linelen = cmd->width * 3;
-
-	// Alignment stuff for glReadPixels
-	padwidth = PAD(linelen, packAlign);
-	padlen = padwidth - linelen;
-	// AVI line padding
-	avipadwidth = PAD(linelen, AVI_LINE_PADDING);
-	avipadlen = avipadwidth - linelen;
-
-	cBuf = PADP(cmd->captureBuffer, packAlign);
-		
-	qglReadPixels(0, 0, cmd->width, cmd->height, GL_RGB,
-		GL_UNSIGNED_BYTE, cBuf);
-
-	memcount = padwidth * cmd->height;
-
-	// gamma correct
-	if(glConfig.deviceSupportsGamma)
-		R_GammaCorrect(cBuf, memcount);
-
-	if(cmd->motionJpeg)
-	{
-		memcount = RE_SaveJPGToBuffer(cmd->encodeBuffer, linelen * cmd->height,
-			r_aviMotionJpegQuality->integer,
-			cmd->width, cmd->height, cBuf, padlen);
-		ri.CL_WriteAVIVideoFrame(cmd->encodeBuffer, memcount);
-	}
-	else
-	{
-		byte *lineend, *memend;
-		byte *srcptr, *destptr;
-	
-		srcptr = cBuf;
-		destptr = cmd->encodeBuffer;
-		memend = srcptr + memcount;
-		
-		// swap R and B and remove line paddings
-		while(srcptr < memend)
-		{
-			lineend = srcptr + linelen;
-			while(srcptr < lineend)
-			{
-				*destptr++ = srcptr[2];
-				*destptr++ = srcptr[1];
-				*destptr++ = srcptr[0];
-				srcptr += 3;
-			}
-			
-			Com_Memset(destptr, '\0', avipadlen);
-			destptr += avipadlen;
-			
-			srcptr += padlen;
-		}
-		
-		ri.CL_WriteAVIVideoFrame(cmd->encodeBuffer, avipadwidth * cmd->height);
-	}
-
-	return (const void *)(cmd + 1);	
+	return NULL;
 }
 
 //============================================================================
@@ -950,21 +849,10 @@ void GL_SetDefaultState( void ) {
 
 	qglColor4f( 1,1,1,1 );
 
-	// initialize downstream texture unit if we're running
-	// in a multitexture environment
-	if ( qglActiveTextureARB ) {
-		GL_SelectTexture( 1 );
-		GL_TextureMode( r_textureMode->string );
-		GL_TexEnv( GL_MODULATE );
-		qglDisable( GL_TEXTURE_2D );
-		GL_SelectTexture( 0 );
-	}
-
 	qglEnable( GL_TEXTURE_2D );
 	GL_TextureMode( r_textureMode->string );
 	GL_TexEnv( GL_MODULATE );
 
-	qglShadeModel( GL_SMOOTH );
 	qglDepthFunc( GL_LEQUAL );
 
 	// the vertex array is always enabled, but the color and texture
@@ -976,50 +864,13 @@ void GL_SetDefaultState( void ) {
 	//
 	glState.glStateBits = GLS_DEPTHTEST_DISABLE | GLS_DEPTHMASK_TRUE;
 
-#ifdef USE_OPENGLES
-	qglPixelStorei(GL_PACK_ALIGNMENT, 1);
-	qglPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-#else
 	qglPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-#endif
 	qglDepthMask( GL_TRUE );
 	qglDisable( GL_DEPTH_TEST );
 	qglEnable( GL_SCISSOR_TEST );
 	qglDisable( GL_CULL_FACE );
 	qglDisable( GL_BLEND );
 
-#ifndef USE_OPENGLES
-//----(SA)	added.
-	// ATI pn_triangles
-	if ( qglPNTrianglesiATI ) {
-		int maxtess;
-
-		// get max supported tesselation
-		qglGetIntegerv( GL_MAX_PN_TRIANGLES_TESSELATION_LEVEL_ATI, (GLint*)&maxtess );
-		glConfig.ATIMaxTruformTess = maxtess;
-
-		// cap if necessary
-		if ( r_ati_truform_tess->value > maxtess ) {
-			ri.Cvar_Set( "r_ati_truform_tess", va( "%d", maxtess ) );
-		}
-
-		// set Wolf defaults
-		qglPNTrianglesiATI( GL_PN_TRIANGLES_TESSELATION_LEVEL_ATI, r_ati_truform_tess->value );
-	}
-#endif
-
-#if 0
-	if ( glConfig.anisotropicAvailable ) {
-		float maxAnisotropy;
-
-		qglGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy );
-		glConfig.maxAnisotropy = maxAnisotropy;
-
-		// set when rendering
-		//qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, glConfig.maxAnisotropy);
-	}
-#endif
-//----(SA)	end
 }
 
 /*
@@ -1080,20 +931,6 @@ void GfxInfo_f( void ) {
 	ri.Printf( PRINT_ALL, "GL_RENDERER: %s\n", glConfig.renderer_string );
 	ri.Printf( PRINT_ALL, "GL_VERSION: %s\n", glConfig.version_string );
 	ri.Printf( PRINT_ALL, "GL_EXTENSIONS: " );
-#ifndef USE_OPENGLES
-	if ( qglGetStringi )
-	{
-		GLint numExtensions;
-		int i;
-
-		qglGetIntegerv( GL_NUM_EXTENSIONS, &numExtensions );
-		for ( i = 0; i < numExtensions; i++ )
-		{
-			ri.Printf( PRINT_ALL, "%s ", qglGetStringi( GL_EXTENSIONS, i ) );
-		}
-	}
-	else
-#endif
 	{
 		R_PrintLongString( glConfig.extensions_string );
 	}
@@ -1117,48 +954,17 @@ void GfxInfo_f( void ) {
 
 	// rendering primitives
 	{
-#ifdef USE_OPENGLES
 		ri.Printf( PRINT_ALL, "rendering primitives: " );
-		ri.Printf( PRINT_ALL, "single glDrawElements\n" );
-#else
-		int primitives;
-
-		// default is to use triangles if compiled vertex arrays are present
-		ri.Printf( PRINT_ALL, "rendering primitives: " );
-		primitives = r_primitives->integer;
-		if ( primitives == 0 ) {
-			if ( qglLockArraysEXT ) {
-				primitives = 2;
-			} else {
-				primitives = 1;
-			}
-		}
-		if ( primitives == -1 ) {
-			ri.Printf( PRINT_ALL, "none\n" );
-		} else if ( primitives == 2 ) {
-			ri.Printf( PRINT_ALL, "single glDrawElements\n" );
-		} else if ( primitives == 1 ) {
-			ri.Printf( PRINT_ALL, "multiple glArrayElement\n" );
-		} else if ( primitives == 3 ) {
-			ri.Printf( PRINT_ALL, "multiple glColor4ubv + glTexCoord2fv + glVertex3fv\n" );
-		}
-#endif
+		ri.Printf( PRINT_ALL, "vglDrawObjects\n");
 	}
 
 	ri.Printf( PRINT_ALL, "texturemode: %s\n", r_textureMode->string );
 	ri.Printf( PRINT_ALL, "picmip: %d\n", r_picmip->integer );
 	ri.Printf( PRINT_ALL, "texture bits: %d\n", r_texturebits->integer );
-	ri.Printf( PRINT_ALL, "multitexture: %s\n", enablestrings[qglActiveTextureARB != 0] );
-	ri.Printf( PRINT_ALL, "compiled vertex arrays: %s\n", enablestrings[qglLockArraysEXT != 0 ] );
+	ri.Printf( PRINT_ALL, "multitexture: %s\n", enablestrings[/*qglActiveTextureARB !=*/ 0] );
+	ri.Printf( PRINT_ALL, "compiled vertex arrays: %s\n", enablestrings[/*qglLockArraysEXT !=*/ 0 ] );
 	ri.Printf( PRINT_ALL, "texenv add: %s\n", enablestrings[glConfig.textureEnvAddAvailable != 0] );
 	ri.Printf( PRINT_ALL, "compressed textures: %s\n", enablestrings[glConfig.textureCompression != TC_NONE] );
-
-#ifndef USE_OPENGLES
-	ri.Printf( PRINT_ALL, "NV distance fog: %s\n", enablestrings[glConfig.NVFogAvailable != 0] );
-	if ( glConfig.NVFogAvailable ) {
-		ri.Printf( PRINT_ALL, "Fog Mode: %s\n", r_nv_fogdist_mode->string );
-	}
-#endif
 
 	if ( r_vertexLight->integer || glConfig.hardwareType == GLHW_PERMEDIA2 ) {
 		ri.Printf( PRINT_ALL, "HACK: using vertex lightmap approximation\n" );
@@ -1180,9 +986,6 @@ R_Register
 ===============
 */
 void R_Register( void ) {
-	#ifdef USE_RENDERER_DLOPEN
-	com_altivec = ri.Cvar_Get("com_altivec", "1", CVAR_ARCHIVE);
-	#endif
 
 	//
 	// latched and archived variables
@@ -1192,20 +995,6 @@ void R_Register( void ) {
 	r_ext_multitexture = ri.Cvar_Get( "r_ext_multitexture", "1", CVAR_ARCHIVE | CVAR_LATCH );
 	r_ext_compiled_vertex_array = ri.Cvar_Get( "r_ext_compiled_vertex_array", "1", CVAR_ARCHIVE | CVAR_LATCH );
 	r_glIgnoreWicked3D = ri.Cvar_Get( "r_glIgnoreWicked3D", "0", CVAR_ARCHIVE | CVAR_LATCH );
-
-#ifndef USE_OPENGLES
-//----(SA)	added
-	r_ext_ATI_pntriangles           = ri.Cvar_Get( "r_ext_ATI_pntriangles", "0", CVAR_ARCHIVE | CVAR_LATCH );   //----(SA)	default to '0'
-	r_ati_truform_tess              = ri.Cvar_Get( "r_ati_truform_tess", "1", CVAR_ARCHIVE );
-	r_ati_truform_normalmode        = ri.Cvar_Get( "r_ati_truform_normalmode", "GL_PN_TRIANGLES_NORMAL_MODE_LINEAR", CVAR_ARCHIVE );
-	r_ati_truform_pointmode         = ri.Cvar_Get( "r_ati_truform_pointmode", "GL_PN_TRIANGLES_POINT_MODE_LINEAR", CVAR_ARCHIVE );
-
-	r_ati_fsaa_samples              = ri.Cvar_Get( "r_ati_fsaa_samples", "1", CVAR_ARCHIVE );       //DAJ valids are 1, 2, 4
-
-	r_ext_NV_fog_dist                   = ri.Cvar_Get( "r_ext_NV_fog_dist", "0", CVAR_ARCHIVE | CVAR_LATCH );
-	r_nv_fogdist_mode                   = ri.Cvar_Get( "r_nv_fogdist_mode", "GL_EYE_RADIAL_NV", CVAR_ARCHIVE );    // default to 'looking good'
-//----(SA)	end
-#endif
 
 	r_ext_texture_env_add = ri.Cvar_Get( "r_ext_texture_env_add", "1", CVAR_ARCHIVE | CVAR_LATCH );
 
@@ -1227,7 +1016,7 @@ void R_Register( void ) {
 	r_overBrightBits = ri.Cvar_Get( "r_overBrightBits", "0", CVAR_ARCHIVE | CVAR_LATCH );
 	r_ignorehwgamma = ri.Cvar_Get( "r_ignorehwgamma", "0", CVAR_ARCHIVE | CVAR_LATCH );
 #ifdef USE_OPENGLES
-	r_mode = ri.Cvar_Get( "r_mode", "-2", CVAR_ARCHIVE | CVAR_LATCH );
+	r_mode = ri.Cvar_Get( "r_mode", "3", CVAR_ARCHIVE | CVAR_LATCH );
 	r_fullscreen = ri.Cvar_Get( "r_fullscreen", "1", CVAR_ARCHIVE | CVAR_LATCH );
 #else
 	r_mode = ri.Cvar_Get( "r_mode", "3", CVAR_ARCHIVE | CVAR_LATCH );
@@ -1276,7 +1065,7 @@ void R_Register( void ) {
 	r_dynamiclight = ri.Cvar_Get( "r_dynamiclight", "1", CVAR_ARCHIVE );
 	r_dlightBacks = ri.Cvar_Get( "r_dlightBacks", "1", CVAR_ARCHIVE );
 	r_finish = ri.Cvar_Get( "r_finish", "0", CVAR_ARCHIVE );
-	r_textureMode = ri.Cvar_Get( "r_textureMode", "GL_LINEAR_MIPMAP_NEAREST", CVAR_ARCHIVE );
+	r_textureMode = ri.Cvar_Get( "r_textureMode", "GL_LINEAR", CVAR_ARCHIVE );
 
 	r_swapInterval = ri.Cvar_Get( "r_swapInterval", "0",
 					CVAR_ARCHIVE | CVAR_LATCH );

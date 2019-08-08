@@ -368,9 +368,6 @@ for each RE_EndFrame
 */
 void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 	drawBufferCommand_t *cmd = NULL;
-#ifndef USE_OPENGLES
-	colorMaskCommand_t *colcmd = NULL;
-#endif
 
 	if ( !tr.registered ) {
 		return;
@@ -381,40 +378,6 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 	tr.frameSceneNum = 0;
 
 	//
-	// do overdraw measurement
-	//
-#ifndef USE_OPENGLES
-	if ( r_measureOverdraw->integer ) {
-		if ( glConfig.stencilBits < 4 ) {
-			ri.Printf( PRINT_ALL, "Warning: not enough stencil bits to measure overdraw: %d\n", glConfig.stencilBits );
-			ri.Cvar_Set( "r_measureOverdraw", "0" );
-			r_measureOverdraw->modified = qfalse;
-		} else if ( r_shadows->integer == 2 )   {
-			ri.Printf( PRINT_ALL, "Warning: stencil shadows and overdraw measurement are mutually exclusive\n" );
-			ri.Cvar_Set( "r_measureOverdraw", "0" );
-			r_measureOverdraw->modified = qfalse;
-		} else
-		{
-			R_IssuePendingRenderCommands();
-			qglEnable( GL_STENCIL_TEST );
-			qglStencilMask( ~0U );
-			qglClearStencil( 0U );
-			qglStencilFunc( GL_ALWAYS, 0U, ~0U );
-			qglStencilOp( GL_KEEP, GL_INCR, GL_INCR );
-		}
-		r_measureOverdraw->modified = qfalse;
-	} else
-	{
-		// this is only reached if it was on and is now off
-		if ( r_measureOverdraw->modified ) {
-			R_IssuePendingRenderCommands();
-			qglDisable( GL_STENCIL_TEST );
-		}
-		r_measureOverdraw->modified = qfalse;
-	}
-#endif
-
-	//
 	// texturemode stuff
 	//
 	if ( r_textureMode->modified ) {
@@ -422,28 +385,6 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 		GL_TextureMode( r_textureMode->string );
 		r_textureMode->modified = qfalse;
 	}
-
-	//
-	// NVidia stuff
-	//
-
-#ifndef USE_OPENGLES
-	// fog control
-	if ( glConfig.NVFogAvailable && r_nv_fogdist_mode->modified ) {
-		r_nv_fogdist_mode->modified = qfalse;
-		if ( !Q_stricmp( r_nv_fogdist_mode->string, "GL_EYE_PLANE_ABSOLUTE_NV" ) ) {
-			glConfig.NVFogMode = (int)GL_EYE_PLANE_ABSOLUTE_NV;
-		} else if ( !Q_stricmp( r_nv_fogdist_mode->string, "GL_EYE_PLANE" ) ) {
-			glConfig.NVFogMode = (int)GL_EYE_PLANE;
-		} else if ( !Q_stricmp( r_nv_fogdist_mode->string, "GL_EYE_RADIAL_NV" ) ) {
-			glConfig.NVFogMode = (int)GL_EYE_RADIAL_NV;
-		} else {
-			// in case this was really 'else', store a valid value for next time
-			glConfig.NVFogMode = (int)GL_EYE_RADIAL_NV;
-			ri.Cvar_Set( "r_nv_fogdist_mode", "GL_EYE_RADIAL_NV" );
-		}
-	}
-#endif
 
 	//
 	// gamma stuff
@@ -465,67 +406,6 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 		}
 	}
 
-#ifndef USE_OPENGLES
-	if (glConfig.stereoEnabled) {
-		if( !(cmd = R_GetCommandBuffer(sizeof(*cmd))) )
-			return;
-			
-		cmd->commandId = RC_DRAW_BUFFER;
-		
-		if ( stereoFrame == STEREO_LEFT ) {
-			cmd->buffer = (int)GL_BACK_LEFT;
-		} else if ( stereoFrame == STEREO_RIGHT ) {
-			cmd->buffer = (int)GL_BACK_RIGHT;
-		} else {
-			ri.Error( ERR_FATAL, "RE_BeginFrame: Stereo is enabled, but stereoFrame was %i", stereoFrame );
-		}
-	}
-	else
-	{
-		if(r_anaglyphMode->integer)
-		{
-			if(r_anaglyphMode->modified)
-			{
-				// clear both, front and backbuffer.
-				qglColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-				qglClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
-				qglDrawBuffer(GL_FRONT);
-				qglClear(GL_COLOR_BUFFER_BIT);
-				qglDrawBuffer(GL_BACK);
-				qglClear(GL_COLOR_BUFFER_BIT);
-				
-				r_anaglyphMode->modified = qfalse;
-			}
-			
-			if(stereoFrame == STEREO_LEFT)
-			{
-				if( !(cmd = R_GetCommandBuffer(sizeof(*cmd))) )
-					return;
-				
-				if( !(colcmd = R_GetCommandBuffer(sizeof(*colcmd))) )
-					return;
-			}
-			else if(stereoFrame == STEREO_RIGHT)
-			{
-				clearDepthCommand_t *cldcmd;
-				
-				if( !(cldcmd = R_GetCommandBuffer(sizeof(*cldcmd))) )
-					return;
-
-				cldcmd->commandId = RC_CLEARDEPTH;
-
-				if( !(colcmd = R_GetCommandBuffer(sizeof(*colcmd))) )
-					return;
-			}
-			else
-				ri.Error( ERR_FATAL, "RE_BeginFrame: Stereo is enabled, but stereoFrame was %i", stereoFrame );
-
-			R_SetColorMode(colcmd->rgba, stereoFrame, r_anaglyphMode->integer);
-			colcmd->commandId = RC_COLORMASK;
-		}
-		else
-#endif
 		{
 			if(stereoFrame != STEREO_CENTER)
 				ri.Error( ERR_FATAL, "RE_BeginFrame: Stereo is disabled, but stereoFrame was %i", stereoFrame );
@@ -537,23 +417,8 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 		if(cmd)
 		{
 			cmd->commandId = RC_DRAW_BUFFER;
-
-#ifndef USE_OPENGLES
-			if(r_anaglyphMode->modified)
-			{
-				qglColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-				r_anaglyphMode->modified = qfalse;
-			}
-
-			if (!Q_stricmp(r_drawBuffer->string, "GL_FRONT"))
-				cmd->buffer = (int)GL_FRONT;
-			else
-#endif
-				cmd->buffer = (int)GL_BACK;
+			cmd->buffer = (int)GL_BACK;
 		}
-#ifndef USE_OPENGLES
-	}
-#endif
 	
 	tr.refdef.stereoFrame = stereoFrame;
 }

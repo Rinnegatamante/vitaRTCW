@@ -53,11 +53,6 @@ static int numEdgeDefs[SHADER_MAX_VERTEXES];
 static int facing[SHADER_MAX_INDEXES / 3];
 static vec3_t shadowXyz[SHADER_MAX_VERTEXES];
 
-#ifdef USE_OPENGLES
-static unsigned short indexes[6*MAX_EDGE_DEFS*SHADER_MAX_VERTEXES];
-static int idx = 0;
-#endif
-
 void R_AddEdgeDef( int i1, int i2, int facing ) {
 	int c;
 
@@ -74,43 +69,11 @@ void R_AddEdgeDef( int i1, int i2, int facing ) {
 void R_RenderShadowEdges( void ) {
 	int i;
 
-#if 0
-	int numTris;
-
-	// dumb way -- render every triangle's edges
-	numTris = tess.numIndexes / 3;
-
-	for ( i = 0 ; i < numTris ; i++ ) {
-		int i1, i2, i3;
-
-		if ( !facing[i] ) {
-			continue;
-		}
-
-		i1 = tess.indexes[ i * 3 + 0 ];
-		i2 = tess.indexes[ i * 3 + 1 ];
-		i3 = tess.indexes[ i * 3 + 2 ];
-
-		qglBegin( GL_TRIANGLE_STRIP );
-		qglVertex3fv( tess.xyz[ i1 ] );
-		qglVertex3fv( shadowXyz[ i1 ] );
-		qglVertex3fv( tess.xyz[ i2 ] );
-		qglVertex3fv( shadowXyz[ i2 ] );
-		qglVertex3fv( tess.xyz[ i3 ] );
-		qglVertex3fv( shadowXyz[ i3 ] );
-		qglVertex3fv( tess.xyz[ i1 ] );
-		qglVertex3fv( shadowXyz[ i1 ] );
-		qglEnd();
-	}
-#else
 	int c, c2;
 	int j, k;
 	int i2;
 	int c_edges, c_rejected;
 	int hit[2];
-#ifdef USE_OPENGLES
-	idx = 0;
-#endif
 
 	// an edge is NOT a silhouette edge if its face doesn't face the light,
 	// or if it has a reverse paired edge that also faces the light.
@@ -140,23 +103,14 @@ void R_RenderShadowEdges( void ) {
 			// if it doesn't share the edge with another front facing
 			// triangle, it is a sil edge
 			if ( hit[ 1 ] == 0 ) {
-#ifdef USE_OPENGLES
-				// A single drawing call is better than many. So I prefer a singe TRIANGLES call than many TRAINGLE_STRIP call
-				// even if it seems less efficiant, it's faster on the PANDORA
-				indexes[idx++] = i;
-				indexes[idx++] = i + tess.numVertexes;
-				indexes[idx++] = i2;
-				indexes[idx++] = i2;
-				indexes[idx++] = i + tess.numVertexes;
-				indexes[idx++] = i2 + tess.numVertexes;
-#else
-				qglBegin( GL_TRIANGLE_STRIP );
-				qglVertex3fv( tess.xyz[ i ] );
-				qglVertex3fv( shadowXyz[ i ] );
-				qglVertex3fv( tess.xyz[ i2 ] );
-				qglVertex3fv( shadowXyz[ i2 ] );
-				qglEnd();
-#endif
+				float vertices[] = {
+					tess.xyz[i][0], tess.xyz[i][1], tess.xyz[i][2],
+					shadowXyz[i][0], shadowXyz[i][1], shadowXyz[i][2],
+					tess.xyz[i2][0], tess.xyz[i2][1], tess.xyz[i2][2],
+					shadowXyz[i2][0], shadowXyz[i2][1], shadowXyz[i2][2]
+				};
+				vglVertexPointer( 3, GL_FLOAT, 0, 4, vertices );
+				vglDrawObjects(GL_TRIANGLE_STRIP, 4, GL_TRUE);
 				c_edges++;
 			} else {
 				c_rejected++;
@@ -164,11 +118,6 @@ void R_RenderShadowEdges( void ) {
 		}
 	}
 
-#ifdef USE_OPENGLES
-	qglDrawElements(GL_TRIANGLES, idx, GL_UNSIGNED_SHORT, indexes);
-#endif
-
-#endif
 }
 
 /*
@@ -184,6 +133,7 @@ triangleFromEdge[ v1 ][ v2 ]
 =================
 */
 void RB_ShadowTessEnd( void ) {
+#ifndef __PSP2__
 	int i;
 	int numTris;
 	vec3_t lightDir;
@@ -281,6 +231,7 @@ void RB_ShadowTessEnd( void ) {
 
 	// reenable writing to the color buffer
 	qglColorMask(rgba[0], rgba[1], rgba[2], rgba[3]);
+#endif
 }
 
 
@@ -317,33 +268,14 @@ void RB_ShadowFinish( void ) {
 //	qglColor3f( 1, 0, 0 );
 //	GL_State( GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ONE | GLS_DSTBLEND_ZERO );
 
-#ifdef USE_OPENGLES
-	GLboolean text = qglIsEnabled(GL_TEXTURE_COORD_ARRAY);
-	GLboolean glcol = qglIsEnabled(GL_COLOR_ARRAY);
-	if (text)
-		qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
-	if (glcol)
-		qglDisableClientState( GL_COLOR_ARRAY );
-	GLfloat vtx[] = {
-	 -100,  100, -10,
-	  100,  100, -10,
-	  100, -100, -10,
-	 -100, -100, -10
+	float vertices[] = {
+		-100,  100, -10,
+		 100,  100, -10,
+		 100, -100, -10,
+		-100, -100, -10
 	};
-	qglVertexPointer  ( 3, GL_FLOAT, 0, vtx );
-	qglDrawArrays( GL_TRIANGLE_FAN, 0, 4 );
-	if (text)
-		qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
-	if (glcol)
-		qglEnableClientState( GL_COLOR_ARRAY );
-#else
-	qglBegin( GL_QUADS );
-	qglVertex3f( -100, 100, -10 );
-	qglVertex3f( 100, 100, -10 );
-	qglVertex3f( 100, -100, -10 );
-	qglVertex3f( -100, -100, -10 );
-	qglEnd();
-#endif
+	vglVertexPointer( 3, GL_FLOAT, 0, 4, vertices );
+	vglDrawObjects(GL_TRIANGLE_FAN, 4, GL_TRUE);
 
 	qglColor4f( 1,1,1,1 );
 	qglDisable( GL_STENCIL_TEST );

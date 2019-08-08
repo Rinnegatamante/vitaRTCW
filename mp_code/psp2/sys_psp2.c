@@ -49,7 +49,11 @@ void log2file(const char *format, ...) {
 	va_end(arg);
 	int i;
 	sprintf(msg, "%s\n", msg);
-	CON_Print(msg);
+	FILE* log = fopen("ux0:/data/iortcw.log", "a+");
+	if (log != NULL) {
+		fwrite(msg, 1, strlen(msg), log);
+		fclose(log);
+	}
 }
 
 #ifndef RELEASE
@@ -996,7 +1000,7 @@ void Sys_StartProcess( char *cmdline, qboolean doexit ) {
 Sys_OpenURL
 =================
 */
-void Sys_OpenURL( char *url, qboolean doexit ) {
+void Sys_OpenURL( const char *url, qboolean doexit ) {
 	char *basepath, *homepath, *pwdpath;
 	char fname[20];
 	char fn[MAX_OSPATH];

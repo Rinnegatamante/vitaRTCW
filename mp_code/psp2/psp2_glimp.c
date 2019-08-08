@@ -31,6 +31,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <vitasdk.h>
 #include "vitaGL.h"
 
+void GLimp_SetGamma( unsigned char red[256], unsigned char green[256], unsigned char blue[256] )
+{
+}
+
 /*
 ===============
 GLimp_Shutdown

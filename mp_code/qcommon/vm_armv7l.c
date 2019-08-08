@@ -31,7 +31,7 @@ ARMv7-A_ARMv7-R_DDI0406_2007.pdf
 */
 
 #include <sys/types.h>
-#include <sys/mman.h>
+#include <vitasdk.h>
 #include <sys/time.h>
 #include <time.h>
 #include <stddef.h>
@@ -67,6 +67,10 @@ ARMv7-A_ARMv7-R_DDI0406_2007.pdf
 #define rDATAMASK	10
 
 #define bit(x) (1<<x)
+
+#define ALIGN(x, a) (((x) + ((a) - 1)) & ~((a) - 1))
+
+SceUID memblock;
 
 /* arm eabi, builtin gcc functions */
 int __aeabi_idiv (int, int);
@@ -202,7 +206,7 @@ static const char *opnames[256] = {
 static void VM_Destroy_Compiled(vm_t *vm)
 {
 	if (vm->codeBase) {
-		if (munmap(vm->codeBase, vm->codeLength))
+		if (sceKernelFreeMemBlock(memblock) < 0)
 			Com_Printf(S_COLOR_RED "Memory unmap failed, possible memory leak\n");
 	}
 	vm->codeBase = NULL;
@@ -251,14 +255,6 @@ static int asmcall(int call, int pstack)
 
 void _emit(vm_t *vm, unsigned isn, int pass)
 {
-#if 0
-	static int fd = -2;
-	if (fd == -2)
-		fd = open("code.bin", O_TRUNC|O_WRONLY|O_CREAT, 0644);
-	if (fd > 0)
-		write(fd, &isn, 4);
-#endif
-
 	if (pass)
 		memcpy(vm->codeBase+vm->codeLength, &isn, 4);
 	vm->codeLength+=4;
@@ -625,9 +621,11 @@ void VM_Compile(vm_t *vm, vmHeader_t *header)
 
 	if(pass)
 	{
-		vm->codeBase = mmap(NULL, vm->codeLength, PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
-		if(vm->codeBase == MAP_FAILED)
+		memblock = sceKernelAllocMemBlockForVM("code", ALIGN(ALIGN(vm->codeLength, 4 * 1024), 1 * 1024 * 1024));
+		sceKernelGetMemBlockBase(memblock, &vm->codeBase);
+		if(memblock < 0)
 			Com_Error(ERR_FATAL, "VM_CompileARM: can't mmap memory");
+		sceKernelOpenVMDomain();
 		vm->codeLength = 0;
 	}
 
@@ -741,11 +739,6 @@ void VM_Compile(vm_t *vm, vmHeader_t *header)
 				break;
 
 			case OP_CALL:
-#if 0
-				// save next instruction
-				emit_MOVR0i(i_count);
-				emit(STRa(R0, rDATABASE, rPSTACK));      // dataBase[pstack] = r0
-#endif
 #ifdef CONST_OPTIMIZE
 				if (got_const)
 				{
@@ -1153,13 +1146,7 @@ void VM_Compile(vm_t *vm, vmHeader_t *header)
 	emit(BKPT(0));
 	} // pass
 
-	if (mprotect(vm->codeBase, vm->codeLength, PROT_READ|PROT_EXEC/* |PROT_WRITE */)) {
-		VM_Destroy_Compiled(vm);
-		DIE("mprotect failed");
-	}
-
-	// clear icache, http://blogs.arm.com/software-enablement/141-caches-and-self-modifying-code/ 
-	__clear_cache(vm->codeBase, vm->codeBase+vm->codeLength);
+	sceKernelSyncVMDomain(memblock, vm->codeBase, vm->codeLength);
 
 	vm->destroy = VM_Destroy_Compiled;
 	vm->compiled = qtrue;

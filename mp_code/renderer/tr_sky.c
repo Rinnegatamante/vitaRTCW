@@ -380,61 +380,30 @@ static void DrawSkySide( struct image_s *image, const int mins[2], const int max
 
 	GL_Bind( image );
 
-#ifdef USE_OPENGLES
-	GLfloat vtx[3*1024];	// arbitrary sized
-	GLfloat tex[2*1024];
-	int idx;
-	
-	GLboolean text = qglIsEnabled(GL_TEXTURE_COORD_ARRAY);
-	GLboolean glcol = qglIsEnabled(GL_COLOR_ARRAY);
-	if (glcol)
-		qglDisableClientState(GL_COLOR_ARRAY);
-	if (!text)
-		qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
-#endif
-
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	for ( t = mins[1] + HALF_SKY_SUBDIVISIONS; t < maxs[1] + HALF_SKY_SUBDIVISIONS; t++ )
 	{
-#ifdef USE_OPENGLES
-		idx=0;
-#else
-		qglBegin( GL_TRIANGLE_STRIP );
-#endif
-
-		for ( s = mins[0] + HALF_SKY_SUBDIVISIONS; s <= maxs[0] + HALF_SKY_SUBDIVISIONS; s++ )
+float *texcoord = gTexCoordBuffer;
+		float *vertices = gVertexBuffer;
+		int numindices = 0;
+		for ( s = mins[0]+HALF_SKY_SUBDIVISIONS; s <= maxs[0]+HALF_SKY_SUBDIVISIONS; s++ )
 		{
-#ifdef USE_OPENGLES
-			memcpy(tex+idx*2, s_skyTexCoords[t][s], sizeof(GLfloat)*2);
-			memcpy(vtx+idx*3, s_skyPoints[t][s], sizeof(GLfloat)*3);
-			idx++;
-			memcpy(tex+idx*2, s_skyTexCoords[t+1][s], sizeof(GLfloat)*2);
-			memcpy(vtx+idx*3, s_skyPoints[t+1][s], sizeof(GLfloat)*3);
-			idx++;
-#else
-			qglTexCoord2fv( s_skyTexCoords[t][s] );
-			qglVertex3fv( s_skyPoints[t][s] );
-
-			qglTexCoord2fv( s_skyTexCoords[t + 1][s] );
-			qglVertex3fv( s_skyPoints[t + 1][s] );
-#endif
+			memcpy(gTexCoordBuffer, s_skyTexCoords[t][s], sizeof(vec2_t));
+			memcpy(gVertexBuffer, s_skyPoints[t][s], sizeof(vec3_t));
+			gVertexBuffer += 3;
+			gTexCoordBuffer += 2;
+			memcpy(gTexCoordBuffer, s_skyTexCoords[t+1][s], sizeof(vec2_t));
+			memcpy(gVertexBuffer, s_skyPoints[t+1][s], sizeof(vec3_t));
+			gVertexBuffer += 3;
+			gTexCoordBuffer += 2;
+			numindices += 2;
 		}
-
-#ifdef USE_OPENGLES
-		//*TODO* Try to switch from many DrawArrays of GL_TRIANGLE_STRIP to a single DrawArrays of TRIANGLES to see if it perform better
-		qglVertexPointer (3, GL_FLOAT, 0, vtx);
-		qglTexCoordPointer(2, GL_FLOAT, 0, tex);
-		qglDrawArrays(GL_TRIANGLE_STRIP, 0, idx);
-#else
-		qglEnd();
-#endif
+		vglVertexPointerMapped(vertices);
+		vglTexCoordPointerMapped(texcoord);
+		vglDrawObjects(GL_TRIANGLE_STRIP, numindices, GL_TRUE);
 	}
 
-#ifdef USE_OPENGLES
-	if (glcol)
-		qglEnableClientState(GL_COLOR_ARRAY);
-	if (!text)
-		qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
-#endif
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
 static void DrawSkySideInner( struct image_s *image, const int mins[2], const int maxs[2] ) {
@@ -442,18 +411,7 @@ static void DrawSkySideInner( struct image_s *image, const int mins[2], const in
 
 	GL_Bind( image );
 
-#ifdef USE_OPENGLES
-	GLfloat vtx[3*1024];	// arbitrary sized
-	GLfloat tex[2*1024];
-	int idx;
-	
-	GLboolean text = qglIsEnabled(GL_TEXTURE_COORD_ARRAY);
-	GLboolean glcol = qglIsEnabled(GL_COLOR_ARRAY);
-	if (glcol)
-		qglDisableClientState(GL_COLOR_ARRAY);
-	if (!text)
-		qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
-#endif
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
 	//qglDisable (GL_BLEND);
 	qglBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
@@ -462,48 +420,29 @@ static void DrawSkySideInner( struct image_s *image, const int mins[2], const in
 
 	for ( t = mins[1] + HALF_SKY_SUBDIVISIONS; t < maxs[1] + HALF_SKY_SUBDIVISIONS; t++ )
 	{
-#ifdef USE_OPENGLES
-		idx=0;
-#else
-		qglBegin( GL_TRIANGLE_STRIP );
-#endif
-
-		for ( s = mins[0] + HALF_SKY_SUBDIVISIONS; s <= maxs[0] + HALF_SKY_SUBDIVISIONS; s++ )
+		float *texcoord = gTexCoordBuffer;
+		float *vertices = gVertexBuffer;
+		int numindices = 0;
+		for ( s = mins[0]+HALF_SKY_SUBDIVISIONS; s <= maxs[0]+HALF_SKY_SUBDIVISIONS; s++ )
 		{
-#ifdef USE_OPENGLES
-			memcpy(tex+idx*2, s_skyTexCoords[t][s], sizeof(GLfloat)*2);
-			memcpy(vtx+idx*3, s_skyPoints[t][s], sizeof(GLfloat)*3);
-			idx++;
-			memcpy(tex+idx*2, s_skyTexCoords[t+1][s], sizeof(GLfloat)*2);
-			memcpy(vtx+idx*3, s_skyPoints[t+1][s], sizeof(GLfloat)*3);
-			idx++;
-#else
-			qglTexCoord2fv( s_skyTexCoords[t][s] );
-			qglVertex3fv( s_skyPoints[t][s] );
-
-			qglTexCoord2fv( s_skyTexCoords[t + 1][s] );
-			qglVertex3fv( s_skyPoints[t + 1][s] );
-#endif
+			memcpy(gTexCoordBuffer, s_skyTexCoords[t][s], sizeof(vec2_t));
+			memcpy(gVertexBuffer, s_skyPoints[t][s], sizeof(vec3_t));
+			gVertexBuffer += 3;
+			gTexCoordBuffer += 2;
+			memcpy(gTexCoordBuffer, s_skyTexCoords[t+1][s], sizeof(vec2_t));
+			memcpy(gVertexBuffer, s_skyPoints[t+1][s], sizeof(vec3_t));
+			gVertexBuffer += 3;
+			gTexCoordBuffer += 2;
+			numindices += 2;
 		}
-
-#ifdef USE_OPENGLES
-		//*TODO* Try to switch from many DrawArrays of GL_TRIANGLE_STRIP to a single DrawArrays of TRIANGLES to see if it perform better
-		qglVertexPointer (3, GL_FLOAT, 0, vtx);
-		qglTexCoordPointer(2, GL_FLOAT, 0, tex);
-		qglDrawArrays(GL_TRIANGLE_STRIP, 0, idx);
-#else
-		qglEnd();
-#endif
+		vglVertexPointerMapped(vertices);
+		vglTexCoordPointerMapped(texcoord);
+		vglDrawObjects(GL_TRIANGLE_STRIP, numindices, GL_TRUE);
 	}
 
 	qglDisable( GL_BLEND );
 
-#ifdef USE_OPENGLES
-	if (glcol)
-		qglEnableClientState(GL_COLOR_ARRAY);
-	if (!text)
-		qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
-#endif
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
 static void DrawSkyBox( shader_t *shader ) {

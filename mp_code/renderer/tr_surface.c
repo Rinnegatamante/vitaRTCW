@@ -352,32 +352,15 @@ static void RB_SurfaceBeam( void ) {
 
 	qglColor3f( 1, 0, 0 );
 
-#ifdef USE_OPENGLES
-	GLboolean text = qglIsEnabled(GL_TEXTURE_COORD_ARRAY);
-	GLboolean glcol = qglIsEnabled(GL_COLOR_ARRAY);
-	if (glcol)
-		qglDisableClientState(GL_COLOR_ARRAY);
-	if (text)
-		qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
-	GLfloat vtx[NUM_BEAM_SEGS*6+6];
+	float *pPos = gVertexBuffer;
 	for ( i = 0; i <= NUM_BEAM_SEGS; i++ ) {
-		memcpy(vtx+i*6, start_points[ i % NUM_BEAM_SEGS], sizeof(GLfloat)*3);
-		memcpy(vtx+i*6+3, end_points[ i % NUM_BEAM_SEGS], sizeof(GLfloat)*3);
+		memcpy(gVertexBuffer, start_points[ i % NUM_BEAM_SEGS], sizeof(vec3_t));
+		gVertexBuffer+=3;
+		memcpy(gVertexBuffer, end_points[ i % NUM_BEAM_SEGS], sizeof(vec3_t));
+		gVertexBuffer+=3;
 	}
-	qglVertexPointer (3, GL_FLOAT, 0, vtx);
-	qglDrawArrays(GL_TRIANGLE_STRIP, 0, NUM_BEAM_SEGS*2+2);
-	if (glcol)
-		qglEnableClientState(GL_COLOR_ARRAY);
-	if (text)
-		qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
-#else
-	qglBegin( GL_TRIANGLE_STRIP );
-	for ( i = 0; i <= NUM_BEAM_SEGS; i++ ) {
-		qglVertex3fv( start_points[ i % NUM_BEAM_SEGS] );
-		qglVertex3fv( end_points[ i % NUM_BEAM_SEGS] );
-	}
-	qglEnd();
-#endif
+	vglVertexPointerMapped(pPos);
+	vglDrawObjects(GL_TRIANGLE_STRIP, (NUM_BEAM_SEGS + 1) * 2, GL_TRUE);
 }
 
 //================================================================================
@@ -1295,52 +1278,29 @@ Draws x/y/z lines from the origin for orientation debugging
 static void RB_SurfaceAxis( void ) {
 	GL_Bind( tr.whiteImage );
 	GL_State( GLS_DEFAULT );
-	qglLineWidth( 3 );
-
-#ifdef USE_OPENGLES
-	GLfloat col[] = {
-	  1,0,0, 1,
-	  1,0,0, 1,
-	  0,1,0, 1,
-	  0,1,0, 1,
-	  0,0,1, 1,
-	  0,0,1, 1
-	 };
-	 GLfloat vtx[] = {
-	  0,0,0,
-	  16,0,0,
-	  0,0,0,
-	  0,16,0,
-	  0,0,0,
-	  0,0,16
-	 };
-	GLboolean text = qglIsEnabled(GL_TEXTURE_COORD_ARRAY);
-	GLboolean glcol = qglIsEnabled(GL_COLOR_ARRAY);
-	if (text)
-		qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
-	if (!glcol)
-		qglEnableClientState( GL_COLOR_ARRAY);
-	qglColorPointer( 4, GL_UNSIGNED_BYTE, 0, col );
-	qglVertexPointer (3, GL_FLOAT, 0, vtx);
-	qglDrawArrays(GL_LINES, 0, 6);
-	if (text)
-		qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
-	if (!glcol)
-		qglDisableClientState( GL_COLOR_ARRAY);
-#else
-	qglBegin( GL_LINES );
-	qglColor3f( 1,0,0 );
-	qglVertex3f( 0,0,0 );
-	qglVertex3f( 16,0,0 );
-	qglColor3f( 0,1,0 );
-	qglVertex3f( 0,0,0 );
-	qglVertex3f( 0,16,0 );
-	qglColor3f( 0,0,1 );
-	qglVertex3f( 0,0,0 );
-	qglVertex3f( 0,0,16 );
-	qglEnd();
-#endif
-	qglLineWidth( 1 );
+	glLineWidth( 3 );
+	float clrs[] = {
+		1, 0, 0, 0,
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 0, 1, 0
+	};
+	float verts[] = {
+		0, 0, 0,
+		16, 0, 0,
+		0, 0, 0,
+		0, 16, 0,
+		0, 0, 0,
+		0, 0, 16
+	};
+	glEnableClientState(GL_COLOR_ARRAY);
+	vglVertexPointer(3, GL_FLOAT, 0, 6, verts);
+	vglColorPointer(4, GL_FLOAT, 0, 6, clrs);
+	vglDrawObjects(GL_LINES, 6, GL_TRUE);
+	glDisableClientState(GL_COLOR_ARRAY);
+	glLineWidth( 1 );
 }
 
 //===========================================================================

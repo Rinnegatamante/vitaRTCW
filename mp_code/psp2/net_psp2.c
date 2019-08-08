@@ -30,7 +30,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #	include <sys/types.h>
 #	include <sys/time.h>
 #	include <unistd.h>
-#	include <fcntl.h>
 #	include <vitasdk.h>
 
 typedef int SOCKET;
@@ -41,8 +40,6 @@ typedef int SOCKET;
 typedef int	ioctlarg_t;
 #	define socketError			errno
 
-
-//TODO: PSP2: ADD NETWORKING...
 #include <psp2/net/net.h>
 #include <sys/select.h>
 
@@ -66,29 +63,11 @@ struct addrinfo {
     struct addrinfo *ai_next;
 };
 
-int getaddrinfo(const char *node, const char *service,
-                const struct addrinfo *hints,
-                struct addrinfo **res) {
-
-    return -11; // EAI_SYSTEM
-}
-
-void freeaddrinfo(struct addrinfo *res) {
-
-}
-
 const char *gai_strerror(int errcode) {
     return "";
 }
 
 #define NI_NUMERICHOST 0
-int getnameinfo(const struct sockaddr *sa, socklen_t salen,
-                char *host, size_t hostlen,
-                char *serv, size_t servlen, int flags) {
-
-    return -11; // EAI_SYSTEM
-}
-
 
 static qboolean usingSocks = qfalse;
 static int networkingEnabled = 0;
@@ -142,59 +121,10 @@ static int numIP;
 NET_ErrorString
 ====================
 */
+char error[256];
 char *NET_ErrorString( void ) {
-#ifdef _WIN32
-	//FIXME: replace with FormatMessage?
-	switch( socketError ) {
-		case WSAEINTR: return "WSAEINTR";
-		case WSAEBADF: return "WSAEBADF";
-		case WSAEACCES: return "WSAEACCES";
-		case WSAEDISCON: return "WSAEDISCON";
-		case WSAEFAULT: return "WSAEFAULT";
-		case WSAEINVAL: return "WSAEINVAL";
-		case WSAEMFILE: return "WSAEMFILE";
-		case WSAEWOULDBLOCK: return "WSAEWOULDBLOCK";
-		case WSAEINPROGRESS: return "WSAEINPROGRESS";
-		case WSAEALREADY: return "WSAEALREADY";
-		case WSAENOTSOCK: return "WSAENOTSOCK";
-		case WSAEDESTADDRREQ: return "WSAEDESTADDRREQ";
-		case WSAEMSGSIZE: return "WSAEMSGSIZE";
-		case WSAEPROTOTYPE: return "WSAEPROTOTYPE";
-		case WSAENOPROTOOPT: return "WSAENOPROTOOPT";
-		case WSAEPROTONOSUPPORT: return "WSAEPROTONOSUPPORT";
-		case WSAESOCKTNOSUPPORT: return "WSAESOCKTNOSUPPORT";
-		case WSAEOPNOTSUPP: return "WSAEOPNOTSUPP";
-		case WSAEPFNOSUPPORT: return "WSAEPFNOSUPPORT";
-		case WSAEAFNOSUPPORT: return "WSAEAFNOSUPPORT";
-		case WSAEADDRINUSE: return "WSAEADDRINUSE";
-		case WSAEADDRNOTAVAIL: return "WSAEADDRNOTAVAIL";
-		case WSAENETDOWN: return "WSAENETDOWN";
-		case WSAENETUNREACH: return "WSAENETUNREACH";
-		case WSAENETRESET: return "WSAENETRESET";
-		case WSAECONNABORTED: return "WSWSAECONNABORTEDAEINTR";
-		case WSAECONNRESET: return "WSAECONNRESET";
-		case WSAENOBUFS: return "WSAENOBUFS";
-		case WSAEISCONN: return "WSAEISCONN";
-		case WSAENOTCONN: return "WSAENOTCONN";
-		case WSAESHUTDOWN: return "WSAESHUTDOWN";
-		case WSAETOOMANYREFS: return "WSAETOOMANYREFS";
-		case WSAETIMEDOUT: return "WSAETIMEDOUT";
-		case WSAECONNREFUSED: return "WSAECONNREFUSED";
-		case WSAELOOP: return "WSAELOOP";
-		case WSAENAMETOOLONG: return "WSAENAMETOOLONG";
-		case WSAEHOSTDOWN: return "WSAEHOSTDOWN";
-		case WSASYSNOTREADY: return "WSASYSNOTREADY";
-		case WSAVERNOTSUPPORTED: return "WSAVERNOTSUPPORTED";
-		case WSANOTINITIALISED: return "WSANOTINITIALISED";
-		case WSAHOST_NOT_FOUND: return "WSAHOST_NOT_FOUND";
-		case WSATRY_AGAIN: return "WSATRY_AGAIN";
-		case WSANO_RECOVERY: return "WSANO_RECOVERY";
-		case WSANO_DATA: return "WSANO_DATA";
-		default: return "NO ERROR";
-	}
-#else
-	return strerror(socketError);
-#endif
+	sprintf(error, "sceNet returned 0x%08X", socketError);
+	return error;
 }
 
 static void NetadrToSockadr( netadr_t *a, struct sockaddr *s ) {
@@ -233,6 +163,14 @@ static struct addrinfo *SearchAddrInfo(struct addrinfo *hints, sa_family_t famil
 	return NULL;
 }
 
+static inline in_addr_t inet_addr( const char *cp )
+{
+	int32_t b1, b2, b3, b4;
+	int res = sscanf( cp, "%d.%d.%d.%d", &b1, &b2, &b3, &b4 );
+	if( res != 4 ) return (in_addr_t)(-1); // is actually expected behavior
+	return htonl( (b1 << 24) | (b2 << 16) | (b3 << 8) | b4 );
+}
+
 /*
 =============
 Sys_StringToSockaddr
@@ -240,19 +178,25 @@ Sys_StringToSockaddr
 */
 static qboolean Sys_StringToSockaddr(const char *s, struct sockaddr *sadr, int sadr_len, sa_family_t family)
 {
-	memset(sadr, '\0', sizeof(*sadr));
-
-	struct sockaddr_in *addr = (struct sockaddr_in*)sadr;
-	int ha1, ha2, ha3, ha4, hp;
-	int ipaddr;
-
-	sscanf(s, "%d.%d.%d.%d:%d", &ha1, &ha2, &ha3, &ha4, &hp);
-	ipaddr = (ha1 << 24) | (ha2 << 16) | (ha3 << 8) | ha4;
-
-	addr->sin_family = AF_INET;
-	addr->sin_addr.s_addr = sceNetHtonl(ipaddr);
-	addr->sin_port = sceNetHtons(hp);
-
+	struct hostent	*h;
+	//char	*colon; // bk001204 - unused
+	
+	memset (sadr, 0, sizeof(*sadr));
+	((struct sockaddr_in *)sadr)->sin_family = AF_INET;
+	
+	((struct sockaddr_in *)sadr)->sin_port = 0;
+	
+	if ( s[0] >= '0' && s[0] <= '9')
+	{
+		*(int *)&((struct sockaddr_in *)sadr)->sin_addr = inet_addr(s);
+	}
+	else
+	{
+		if (! (h = gethostbyname(s)) )
+			return qfalse;
+		*(int *)&((struct sockaddr_in *)sadr)->sin_addr = *(int *)h->h_addr_list[0];
+	}
+	
 	return qtrue;
 }
 
@@ -441,7 +385,7 @@ qboolean NET_GetPacket(netadr_t *net_from, msg_t *net_message, fd_set *fdr)
 		{
 			err = socketError;
 
-			if( err != EAGAIN && err != ECONNRESET )
+			if( err != SCE_NET_EAGAIN && err != SCE_NET_ECONNRESET && err < 0 )
 				Com_Printf( "NET_GetPacket: %s\n", NET_ErrorString() );
 		}
 		else
@@ -526,12 +470,12 @@ void Sys_SendPacket( int length, const void *data, netadr_t to ) {
 		int err = socketError;
 
 		// wouldblock is silent
-		if( err == EAGAIN ) {
+		if( err == SCE_NET_EAGAIN ) {
 			return;
 		}
 
 		// some PPP links do not allow broadcasts and return an error
-		if( ( err == EADDRNOTAVAIL ) && ( ( to.type == NA_BROADCAST ) ) ) {
+		if( ( err == SCE_NET_EADDRNOTAVAIL ) && ( ( to.type == NA_BROADCAST ) ) ) {
 			return;
 		}
 
@@ -656,8 +600,9 @@ SOCKET NET_IPSocket( char *net_interface, int port, int *err ) {
 		Com_Printf( "WARNING: NET_IPSocket: socket: %s\n", NET_ErrorString() );
 		return newsocket;
 	}
+	
 	// make it non-blocking
-	fcntl(newsocket, F_SETFL, O_NONBLOCK);
+	setsockopt(newsocket, SOL_SOCKET, SO_NONBLOCK, (char *)&_true, sizeof(_true));
 
 	// make it broadcast capable
 	if( setsockopt( newsocket, SOL_SOCKET, SO_BROADCAST, (char *) &i, sizeof(i) ) == SOCKET_ERROR ) {
@@ -919,7 +864,7 @@ static void NET_GetLocalAddress( void ) {
 
 	
 	
-	if(!getaddrinfo(hostname, NULL, &hint, &res))
+	//if(!getaddrinfo(hostname, NULL, &hint, &res))
 	{
 		struct sockaddr_in mask4;
 		struct sockaddr_in addr;
@@ -940,8 +885,6 @@ static void NET_GetLocalAddress( void ) {
 		Sys_ShowIP();
 	}
 
-	if(res)
-		freeaddrinfo(res);
 }
 
 /*
@@ -977,7 +920,7 @@ void NET_OpenIP( void ) {
 			}
 			else
 			{
-				if(err == EAFNOSUPPORT)
+				if(err == SCE_NET_EAFNOSUPPORT)
 					break;
 			}
 		}
@@ -1121,6 +1064,7 @@ static void *net_memory = NULL;
 void NET_Init( void ) {
 	
 	sceSysmoduleLoadModule(SCE_SYSMODULE_NET);
+	sceSysmoduleLoadModule(SCE_SYSMODULE_HTTP);
 	SceNetInitParam initparam;
 	int ret = sceNetShowNetstat();
 	if (ret == SCE_NET_ERROR_ENOTINIT) {
@@ -1137,6 +1081,7 @@ void NET_Init( void ) {
 	if (ret < 0){
 		sceNetTerm();
 		free(net_memory);
+		net_memory = NULL;
 	}
 	
 	NET_Config( qtrue );
@@ -1159,7 +1104,9 @@ void NET_Shutdown( void ) {
 	
 	sceNetCtlTerm();
 	sceNetTerm();
-	free(net_memory);
+	if (net_memory) free(net_memory);
+	net_memory = NULL;
+	sceSysmoduleUnloadModule(SCE_SYSMODULE_HTTP);
 	sceSysmoduleUnloadModule(SCE_SYSMODULE_NET);
 }
 

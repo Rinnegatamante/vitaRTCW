@@ -82,9 +82,6 @@ void R_Fog( glfog_t *curfog ) {
 	if ( !curfog->density ) {
 		curfog->density = 1;
 	}
-	if ( !curfog->hint ) {
-		curfog->hint = GL_DONT_CARE;
-	}
 	if ( !curfog->mode ) {
 		curfog->mode = GL_LINEAR;
 	}
@@ -94,26 +91,16 @@ void R_Fog( glfog_t *curfog ) {
 
 	// only send changes if necessary
 
-	qglFogi( GL_FOG_MODE, curfog->mode );
-	qglFogfv( GL_FOG_COLOR, curfog->color );
-	qglFogf( GL_FOG_DENSITY, curfog->density );
-	qglHint( GL_FOG_HINT, curfog->hint );
-	qglFogf( GL_FOG_START, curfog->start );
+	glFogi( GL_FOG_MODE, curfog->mode );
+	glFogfv( GL_FOG_COLOR, curfog->color );
+	glFogf( GL_FOG_DENSITY, curfog->density );
+	glFogf( GL_FOG_START, curfog->start );
 
 	if ( r_zfar->value ) {             // (SA) allow override for helping level designers test fog distances
-		qglFogf( GL_FOG_END, r_zfar->value );
+		glFogf( GL_FOG_END, r_zfar->value );
 	} else {
-		qglFogf( GL_FOG_END, curfog->end );
+		glFogf( GL_FOG_END, curfog->end );
 	}
-
-#ifndef USE_OPENGLES
-// TTimo - from SP NV fog code
-	// NV fog mode
-	if ( glConfig.NVFogAvailable ) {
-		qglFogi( GL_FOG_DISTANCE_MODE_NV, glConfig.NVFogMode );
-	}
-// end
-#endif
 
 	qglClearColor( curfog->color[0], curfog->color[1], curfog->color[2], curfog->color[3] );
 
@@ -208,7 +195,6 @@ void R_SetFog( int fogvar, int var1, int var2, float r, float g, float b, float 
 			glfogsettings[fogvar].clearscreen   = qfalse;
 			glfogsettings[fogvar].density       = density;
 		}
-		glfogsettings[fogvar].hint          = GL_DONT_CARE;
 		glfogsettings[fogvar].registered    = qtrue;
 
 		return;
@@ -1600,38 +1586,15 @@ void R_DebugPolygon( int color, int numPoints, float *points ) {
 
 	GL_State( GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE );
 
-	// draw solid shade
-
-#ifdef USE_OPENGLES
-	qglColor4f( color&1, (color>>1)&1, (color>>2)&1, 1.0f );
-	qglVertexPointer  ( 3, GL_FLOAT, 0, points );
-	qglDrawArrays( GL_TRIANGLE_FAN, 0, numPoints );
-#else
-	qglColor3f( color & 1, ( color >> 1 ) & 1, ( color >> 2 ) & 1 );
-	qglBegin( GL_POLYGON );
-	for ( i = 0 ; i < numPoints ; i++ ) {
-		qglVertex3fv( points + i * 3 );
-	}
-	qglEnd();
-#endif
-
+	qglColor3f( color&1, (color>>1)&1, (color>>2)&1 );
+	vglVertexPointer(3, GL_FLOAT, 0, numPoints, points);
+	vglDrawObjects(GL_TRIANGLE_FAN, 4, GL_TRUE);
+	
 	// draw wireframe outline
-#ifndef USE_OPENGLES
 	GL_State( GLS_POLYMODE_LINE | GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE );
-#endif
 	qglDepthRange( 0, 0 );
-#ifdef USE_OPENGLES
-	qglColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
-	qglVertexPointer  ( 3, GL_FLOAT, 0, points );
-	qglDrawArrays( GL_LINES, 0, numPoints );
-#else
 	qglColor3f( 1, 1, 1 );
-	qglBegin( GL_POLYGON );
-	for ( i = 0 ; i < numPoints ; i++ ) {
-		qglVertex3fv( points + i * 3 );
-	}
-	qglEnd();
-#endif
+	vglDrawObjects(GL_TRIANGLE_FAN, 4, GL_TRUE);
 	qglDepthRange( 0, 1 );
 }
 
