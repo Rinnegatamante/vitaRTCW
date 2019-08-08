@@ -128,7 +128,7 @@ void GLimp_Init( qboolean coreContext)
 		inited = 1;
 		cur_width = glConfig.vidWidth;
 	}else if (glConfig.vidWidth != cur_width){ // Changed resolution in game, restarting the game
-		sceAppMgrLoadExec("app0:/eboot.bin", NULL, NULL);
+		sceAppMgrLoadExec("app0:/mp_eboot.bin", NULL, NULL);
 	}
 	vglStartRendering();
 	int i;
