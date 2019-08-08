@@ -1,10 +1,9 @@
-TARGET		:= vitaRTCW
-TITLE		:= RTCW00001
+TARGET		:= mp_eboot
 GIT_VERSION := $(shell git describe --abbrev=6 --dirty --always --tags)
 
-SOURCES  := code/renderer code/qcommon code/botlib code/client code/server code/psp2 code/sys
-CPPSOURCES := code/splines
-INCLUDES := code/renderer code/qcommon code/botlib code/client code/server code/psp2 code/sys code/splines
+SOURCES  := mp_code/renderer mp_code/qcommon mp_code/botlib mp_code/client mp_code/server mp_code/psp2 mp_code/sys
+CPPSOURCES := mp_code/splines
+INCLUDES := mp_code/renderer mp_code/qcommon mp_code/botlib mp_code/client mp_code/server mp_code/psp2 mp_code/sys mp_code/splines
 
 LIBS = -lvitaGL -lvorbisfile -lvorbis -logg  -lspeexdsp -lmpg123 \
 	-lc -lSceCommonDialog_stub -lSceAudio_stub -lSceLibKernel_stub \
@@ -30,23 +29,17 @@ CFLAGS  = $(INCLUDE) -D__PSP2__ -D__FLOAT_WORD_ORDER=1 -D__GNU__ \
 CXXFLAGS  = $(CFLAGS) -fno-exceptions -std=gnu++11 -fpermissive
 ASFLAGS = $(CFLAGS)
 
-all: $(TARGET).vpk
+all: $(TARGET).bin
 
-$(TARGET).vpk: $(TARGET).velf 
-	make -C code/cgame
-	cp -f code/cgame/cgame.suprx ./cgame.sp.arm.suprx
-	make -C code/ui
-	cp -f code/ui/ui.suprx ./ui.sp.arm.suprx
-	make -C code/game
-	cp -f code/game/qagame.suprx ./qagame.sp.arm.suprx
+$(TARGET).bin: $(TARGET).velf 
+	make -C mp_code/cgame
+	cp -f mp_code/cgame/cgame.suprx ./cgame.mp.arm.suprx
+	make -C mp_code/ui
+	cp -f mp_code/ui/ui.suprx ./ui.mp.arm.suprx
+	make -C mp_code/game
+	cp -f mp_code/game/qagame.suprx ./qagame.mp.arm.suprx
 	
-	vita-make-fself -s $< build/eboot.bin
-	vita-mksfoex -s TITLE_ID=$(TITLE) -d ATTRIBUTE2=12 "$(TARGET)" param.sfo
-	cp -f param.sfo build/sce_sys/param.sfo
-
-	#------------ Comment this if you don't have 7zip ------------------
-	7z a -tzip ./$(TARGET).vpk -r ./build/sce_sys ./build/eboot.bin ./build/shaders
-	#-------------------------------------------------------------------
+	vita-make-fself -s $< build/$(TARGET).bin
 
 eboot.bin: $(TARGET).velf
 	vita-make-fself -s $< eboot.bin
@@ -63,4 +56,4 @@ clean:
 	@make -C code/cgame clean
 	@make -C code/ui clean
 	@make -C code/game clean
-	@rm -rf $(TARGET).velf $(TARGET).elf $(OBJS) $(TARGET).elf.unstripped.elf $(TARGET).vpk build/eboot.bin build/sce_sys/param.sfo ./param.sfo
+	@rm -rf $(TARGET).velf $(TARGET).elf $(OBJS) $(TARGET).elf.unstripped.elf $(TARGET).vpk build/$(TARGET).bin build/sce_sys/param.sfo ./param.sfo
