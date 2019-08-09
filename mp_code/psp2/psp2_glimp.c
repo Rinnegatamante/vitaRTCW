@@ -104,7 +104,7 @@ void GLimp_Init( qboolean coreContext)
 {
 	
 	if (r_mode->integer < 0) r_mode->integer = 3;
-	
+
 	glConfig.vidWidth = r_vidModes[r_mode->integer].width;
 	glConfig.vidHeight = r_vidModes[r_mode->integer].height;
 	glConfig.colorBits = 32;
@@ -112,7 +112,7 @@ void GLimp_Init( qboolean coreContext)
 	glConfig.stencilBits = 8;
 	glConfig.displayFrequency = 60;
 	glConfig.stereoEnabled = qfalse;
-	
+
 	glConfig.driverType = GLDRV_ICD;
 	glConfig.hardwareType = GLHW_GENERIC;
 	glConfig.deviceSupportsGamma = qfalse;
@@ -121,15 +121,13 @@ void GLimp_Init( qboolean coreContext)
 	glConfig.windowAspect = ((float)r_vidModes[r_mode->integer].width) / ((float)r_vidModes[r_mode->integer].height);
 	glConfig.isFullscreen = qtrue;
 	
-	if (!inited){
-		vglInitExtended(0x10000, glConfig.vidWidth, glConfig.vidHeight, 0x2000000, SCE_GXM_MULTISAMPLE_4X);
-		vglUseVram(GL_TRUE);
-		vglMapHeapMem();
-		inited = 1;
-		cur_width = glConfig.vidWidth;
-	}else if (glConfig.vidWidth != cur_width){ // Changed resolution in game, restarting the game
-		sceAppMgrLoadExec("app0:/mp_eboot.bin", NULL, NULL);
-	}
+	if (inited) return;
+	
+	vglInitExtended(0x10000, glConfig.vidWidth, glConfig.vidHeight, 0x2000000, SCE_GXM_MULTISAMPLE_4X);
+	vglUseVram(GL_TRUE);
+	vglMapHeapMem();
+	inited = 1;
+	cur_width = glConfig.vidWidth; 
 	vglStartRendering();
 	int i;
 	indices = (uint16_t*)malloc(sizeof(uint16_t*)*MAX_INDICES);
