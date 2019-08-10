@@ -125,7 +125,6 @@ void GLimp_Init( qboolean coreContext)
 	
 	vglInitExtended(0x10000, glConfig.vidWidth, glConfig.vidHeight, 0x2000000, SCE_GXM_MULTISAMPLE_4X);
 	vglUseVram(GL_TRUE);
-	vglMapHeapMem();
 	inited = 1;
 	cur_width = glConfig.vidWidth; 
 	vglStartRendering();
