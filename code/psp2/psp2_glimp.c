@@ -96,6 +96,27 @@ extern vidmode_t r_vidModes[];
 
 uint32_t cur_width;
 
+SceUID First_Mutex, FirstEnd_Mutex, Second_Mutex, SecondEnd_Mutex;
+
+extern void (*copyFunc1)();
+extern void (*copyFunc2)();
+
+static int copyThreadFirst(unsigned int args, void* arg) {
+	for (;;) {
+		sceKernelWaitSema(First_Mutex, 1, NULL);
+		copyFunc1();
+		sceKernelSignalSema(FirstEnd_Mutex, 1);
+	}
+}
+
+static int copyThreadSecond(unsigned int args, void* arg) {
+	for (;;) {
+		sceKernelWaitSema(Second_Mutex, 1, NULL);
+		copyFunc2();
+		sceKernelSignalSema(SecondEnd_Mutex, 1);
+	}
+}
+
 void GLimp_Init( qboolean coreContext)
 {
 	
@@ -116,6 +137,17 @@ void GLimp_Init( qboolean coreContext)
 	glConfig.textureEnvAddAvailable = qfalse;
 	glConfig.windowAspect = ((float)r_vidModes[r_mode->integer].width) / ((float)r_vidModes[r_mode->integer].height);
 	glConfig.isFullscreen = qtrue;
+	
+	First_Mutex = sceKernelCreateSema("First Mutex", 0, 0, 1, NULL);
+	FirstEnd_Mutex = sceKernelCreateSema("First End Mutex", 0, 0, 1, NULL);
+	Second_Mutex = sceKernelCreateSema("Second Mutex", 0, 0, 1, NULL);
+	SecondEnd_Mutex = sceKernelCreateSema("Second End Mutex", 0, 0, 1, NULL);
+	
+	SceUID cp_thd1 = sceKernelCreateThread("Copy Thread #1", &copyThreadFirst, 0x10000100, 0x10000, 0, 0, NULL);
+	sceKernelStartThread(cp_thd1, 0, NULL);
+	
+	SceUID cp_thd2 = sceKernelCreateThread("Copy Thread #1", &copyThreadSecond, 0x10000100, 0x10000, 0, 0, NULL);
+	sceKernelStartThread(cp_thd2, 0, NULL);
 	
 	if (!inited){
 		vglInitExtended(0x10000, glConfig.vidWidth, glConfig.vidHeight, 0x2000000, SCE_GXM_MULTISAMPLE_4X);
