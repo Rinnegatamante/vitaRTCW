@@ -517,7 +517,7 @@ int main(int argc, char **argv) {
 	// Starting input
 	IN_Init(NULL);
 	
-	// We need a bigger stack to run Quake 3, so we create a new thread with a proper stack size
+	// We need a bigger stack to run RTCW, so we create a new thread with a proper stack size
 	SceUID main_thread = sceKernelCreateThread("RTCW", rtcw_main, 0x40, 0x200000, 0, 0, NULL);
 	if (main_thread >= 0){
 		sceKernelStartThread(main_thread, 0, NULL);

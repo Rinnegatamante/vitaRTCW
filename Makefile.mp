@@ -6,7 +6,7 @@ CPPSOURCES := mp_code/splines
 INCLUDES := mp_code/renderer mp_code/qcommon mp_code/botlib mp_code/client mp_code/server mp_code/psp2 mp_code/sys mp_code/splines
 
 LIBS = -lvitaGL -lvorbisfile -lvorbis -logg  -lspeexdsp -lmpg123 \
-	-lc -lSceCommonDialog_stub -lSceAudio_stub -lSceLibKernel_stub \
+	-lc -lSceCommonDialog_stub -lSceAudio_stub -lSceLibKernel_stub -lmathneon \
 	-lSceNet_stub -lSceNetCtl_stub -lpng -lz -lSceDisplay_stub -lSceGxm_stub \
 	-lSceSysmodule_stub -lSceCtrl_stub -lSceTouch_stub -lSceMotion_stub -lm -lSceAppMgr_stub \
 	-lSceAppUtil_stub -lScePgf_stub -ljpeg -lSceRtc_stub -lScePower_stub -lcurl \

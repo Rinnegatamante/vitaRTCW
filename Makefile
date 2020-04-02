@@ -30,6 +30,11 @@ CFLAGS  = $(INCLUDE) -D__PSP2__ -D__FLOAT_WORD_ORDER=1 -D__GNU__ \
 CXXFLAGS  = $(CFLAGS) -fno-exceptions -std=gnu++11 -fpermissive
 ASFLAGS = $(CFLAGS)
 
+release:
+	make -f Makefile.mp
+	make clean
+	make all
+
 all: $(TARGET).vpk
 
 $(TARGET).vpk: $(TARGET).velf 
