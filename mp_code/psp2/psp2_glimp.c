@@ -129,7 +129,7 @@ void GLimp_Init( qboolean coreContext)
 	cur_width = glConfig.vidWidth; 
 	vglStartRendering();
 	int i;
-	indices = (uint16_t*)malloc(sizeof(uint16_t*)*MAX_INDICES);
+	indices = (uint16_t*)malloc(sizeof(uint16_t)*MAX_INDICES);
 	for (i=0;i<MAX_INDICES;i++){
 		indices[i] = i;
 	}
