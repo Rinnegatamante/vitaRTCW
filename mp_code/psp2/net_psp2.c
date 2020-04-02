@@ -219,6 +219,13 @@ Sys_StringToAdr
 =============
 */
 qboolean Sys_StringToAdr( const char *s, netadr_t *a, netadrtype_t family ) {
+	char *p1 = strstr(s, ":");
+	char *p2;
+	if (p1) {
+		p2 = strstr(p1 + 1, ":");
+		if (p2) p2[0] = 0;
+	}
+	
 	struct sockaddr_storage sadr;
 	sa_family_t fam;
 
