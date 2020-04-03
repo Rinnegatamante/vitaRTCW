@@ -57,4 +57,4 @@ clean:
 	@make -C code/cgame clean
 	@make -C code/ui clean
 	@make -C code/game clean
-	@rm -rf $(TARGET).velf $(TARGET).elf $(OBJS) $(TARGET).elf.unstripped.elf $(TARGET).vpk build/$(TARGET).bin build/sce_sys/param.sfo ./param.sfo
+	@rm -rf $(TARGET).velf $(TARGET).elf $(OBJS) $(TARGET).elf.unstripped.elf $(TARGET).vpk
