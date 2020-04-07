@@ -656,8 +656,9 @@ SOCKET NET_IPSocket( char *net_interface, int port, int *err ) {
 		Com_Printf( "WARNING: NET_IPSocket: socket: %s\n", NET_ErrorString() );
 		return newsocket;
 	}
+	
 	// make it non-blocking
-	fcntl(newsocket, F_SETFL, O_NONBLOCK);
+	setsockopt(newsocket, SOL_SOCKET, SCE_NET_SO_NBIO, &i, sizeof(int));
 
 	// make it broadcast capable
 	if( setsockopt( newsocket, SOL_SOCKET, SO_BROADCAST, (char *) &i, sizeof(i) ) == SOCKET_ERROR ) {
