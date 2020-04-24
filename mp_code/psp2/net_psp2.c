@@ -609,7 +609,7 @@ SOCKET NET_IPSocket( char *net_interface, int port, int *err ) {
 	}
 	
 	// make it non-blocking
-	setsockopt(newsocket, SOL_SOCKET, SO_NONBLOCK, (char *)&_true, sizeof(_true));
+	setsockopt(newsocket, SOL_SOCKET, SCE_NET_SO_NBIO, &i, sizeof(int));
 
 	// make it broadcast capable
 	if( setsockopt( newsocket, SOL_SOCKET, SO_BROADCAST, (char *) &i, sizeof(i) ) == SOCKET_ERROR ) {
