@@ -49,7 +49,7 @@ typedef int	ioctlarg_t;
 #define INADDR_BROADCAST SCE_NET_INADDR_BROADCAST
 #define INADDR_ANY SCE_NET_INADDR_ANY
 
-struct sockaddr_storage {
+/*struct sockaddr_storage {
     uint8_t ss_len;
     sa_family_t ss_family;
     char ss_padding[128];
@@ -75,7 +75,7 @@ int getaddrinfo(const char *node, const char *service,
 
 void freeaddrinfo(struct addrinfo *res) {
 
-}
+}*/
 
 const char *gai_strerror(int errcode) {
     return "";
