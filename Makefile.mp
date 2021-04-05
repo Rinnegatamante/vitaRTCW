@@ -40,10 +40,10 @@ $(TARGET).bin: $(TARGET).velf
 	make -C mp_code/game
 	cp -f mp_code/game/qagame.suprx ./qagame.mp.arm.suprx
 	
-	vita-make-fself -s $< build/$(TARGET).bin
+	vita-make-fself -c -s $< build/$(TARGET).bin
 
 eboot.bin: $(TARGET).velf
-	vita-make-fself -s $< eboot.bin
+	vita-make-fself -c -s $< eboot.bin
 
 %.velf: %.elf
 	cp $< $<.unstripped.elf
