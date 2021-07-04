@@ -832,6 +832,12 @@ void GL_SetDefaultState( void ) {
 	qglCullFace( GL_FRONT );
 
 	qglColor4f( 1,1,1,1 );
+	
+	GL_SelectTexture( 1 );
+	GL_TextureMode( r_textureMode->string );
+	GL_TexEnv( GL_MODULATE );
+	qglDisable( GL_TEXTURE_2D );
+	GL_SelectTexture( 0 );
 
 	qglEnable( GL_TEXTURE_2D );
 	GL_TextureMode( r_textureMode->string );
@@ -945,7 +951,7 @@ void GfxInfo_f( void ) {
 	ri.Printf( PRINT_ALL, "picmip: %d\n", r_picmip->integer );
 	ri.Printf( PRINT_ALL, "picmip2: %d\n", r_picmip2->integer );
 	ri.Printf( PRINT_ALL, "texture bits: %d\n", r_texturebits->integer );
-	ri.Printf( PRINT_ALL, "multitexture: %s\n", enablestrings[/*qglActiveTextureARB !=*/ 0] );
+	ri.Printf( PRINT_ALL, "multitexture: %s\n", enablestrings[/*qglActiveTextureARB !=*/ 1] );
 	ri.Printf( PRINT_ALL, "compiled vertex arrays: %s\n", enablestrings[/*qglLockArraysEXT !=*/ 0 ] );
 	ri.Printf( PRINT_ALL, "texenv add: %s\n", enablestrings[glConfig.textureEnvAddAvailable != 0] );
 	ri.Printf( PRINT_ALL, "compressed textures: %s\n", enablestrings[glConfig.textureCompression != TC_NONE] );

@@ -916,6 +916,10 @@ static void Upload32(   unsigned *data,
 			{
 					internalFormat = GL_LUMINANCE;
 			}
+			else if ( !noCompress)
+			{
+					internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+			}
 			else
 			{
 					internalFormat = GL_RGB;
@@ -927,6 +931,10 @@ static void Upload32(   unsigned *data,
 			if(r_greyscale->integer)
 			{
 					internalFormat = GL_LUMINANCE_ALPHA;
+			}
+			else if ( !noCompress)
+			{
+					internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
 			}
 			else
 			{
@@ -974,7 +982,7 @@ static void Upload32(   unsigned *data,
 	qglTexImage2D( GL_TEXTURE_2D, 0, internalFormat, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scaledBuffer );
 
 	if ( mipmap ) {
-		/*int miplevel;
+		int miplevel;
 
 		miplevel = 0;
 		while ( scaled_width > 1 || scaled_height > 1 )
@@ -993,9 +1001,8 @@ static void Upload32(   unsigned *data,
 			if ( r_colorMipLevels->integer ) {
 				R_BlendOverTexture( (byte *)scaledBuffer, scaled_width * scaled_height, mipBlendColors[miplevel] );
 			}
-
-		}*/
-		glGenerateMipmap(GL_TEXTURE_2D);
+			qglTexImage2D( GL_TEXTURE_2D, miplevel, internalFormat, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scaledBuffer );
+		}
 	}
 done:
 
@@ -1078,9 +1085,14 @@ image_t *R_CreateImageExt( const char *name, byte *pic, int width, int height, i
 		glWrapClampMode = GL_REPEAT;
 
 	// lightmaps are always allocated on TMU 1
+	if ( isLightmap ) {
+		image->TMU = 1;
+	} else {
 		image->TMU = 0;
+	}
 
-
+	GL_SelectTexture( image->TMU );
+	
 	GL_Bind( image );
 
 	Upload32( (unsigned *)pic,

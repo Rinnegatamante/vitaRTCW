@@ -48,8 +48,8 @@ If you have questions concerning this license or the applicable additional terms
 #define GL_INDEX_TYPE		GL_UNSIGNED_SHORT
 typedef unsigned short glIndex_t;
 #else
-#define GL_INDEX_TYPE       GL_UNSIGNED_INT
-typedef unsigned int glIndex_t;
+#define GL_INDEX_TYPE		GL_UNSIGNED_SHORT
+typedef unsigned short glIndex_t;
 #endif
 
 // 11 bits
