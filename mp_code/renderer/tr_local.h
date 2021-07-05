@@ -37,14 +37,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "qgl.h"
 #include "iqm.h"
 
-#define GLE(ret, name, ...) extern name##proc * qgl##name;
-QGL_1_1_PROCS;
-QGL_1_1_FIXED_FUNCTION_PROCS;
-QGL_DESKTOP_1_1_PROCS;
-QGL_DESKTOP_1_1_FIXED_FUNCTION_PROCS;
-QGL_3_0_PROCS;
-#undef GLE
-
 #ifdef USE_OPENGLES
 #ifdef USE_LOCAL_HEADERS
 #	include "GLES/glext.h"
@@ -56,8 +48,8 @@ QGL_3_0_PROCS;
 #define GL_INDEX_TYPE		GL_UNSIGNED_SHORT
 typedef unsigned short glIndex_t;
 #else
-#define GL_INDEX_TYPE       GL_UNSIGNED_INT
-typedef unsigned int glIndex_t;
+#define GL_INDEX_TYPE       GL_UNSIGNED_SHORT
+typedef unsigned short glIndex_t;
 #endif
 
 // 13 bits

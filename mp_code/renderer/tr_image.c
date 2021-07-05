@@ -735,6 +735,7 @@ static void Upload32(   unsigned *data,
 						int *format,
 						int *pUploadWidth, int *pUploadHeight,
 						qboolean noCompress ) {
+	GLboolean compressed = GL_FALSE;
 	int samples;
 	int scaled_width, scaled_height;
 	unsigned    *scaledBuffer = NULL;
@@ -870,6 +871,11 @@ static void Upload32(   unsigned *data,
 			{
 					internalFormat = GL_LUMINANCE;
 			}
+			else if ( !noCompress)
+			{
+					internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+					compressed = GL_TRUE;
+			}
 			else
 			{
 					internalFormat = GL_RGB;
@@ -881,6 +887,11 @@ static void Upload32(   unsigned *data,
 			if(r_greyscale->integer)
 			{
 					internalFormat = GL_LUMINANCE_ALPHA;
+			}
+			else if ( !noCompress)
+			{
+					internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+					compressed = GL_TRUE;
 			}
 			else
 			{
@@ -928,7 +939,27 @@ static void Upload32(   unsigned *data,
 	qglTexImage2D( GL_TEXTURE_2D, 0, internalFormat, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scaledBuffer );
 
 	if ( mipmap ) {
-		glGenerateMipmap(GL_TEXTURE_2D);
+		if (compressed) {
+			int miplevel;
+			miplevel = 0;
+			while (scaled_width > 4 && scaled_height > 4)
+			{
+				R_MipMap( (byte *)scaledBuffer, scaled_width, scaled_height );
+				scaled_width >>= 1;
+				scaled_height >>= 1;
+				if ( scaled_width < 1 ) {
+					scaled_width = 1;
+				}
+				if ( scaled_height < 1 ) {
+					scaled_height = 1;
+				}
+				miplevel++;
+				if ( r_colorMipLevels->integer ) {
+					R_BlendOverTexture( (byte *)scaledBuffer, scaled_width * scaled_height, mipBlendColors[miplevel] );
+				}
+				qglTexImage2D( GL_TEXTURE_2D, miplevel, internalFormat, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scaledBuffer );
+			}
+		} else glGenerateMipmap(GL_TEXTURE_2D);
 	}
 done:
 
@@ -1007,7 +1038,13 @@ image_t *R_CreateImage( const char *name, byte *pic, int width, int height,
 		glWrapClampMode = GL_REPEAT;
 
 	// lightmaps are always allocated on TMU 1
-	image->TMU = 0;
+	if ( isLightmap ) {
+		image->TMU = 1;
+	} else {
+		image->TMU = 0;
+	}
+	
+	GL_SelectTexture( image->TMU );
 
 	GL_Bind( image );
 
@@ -1501,7 +1538,10 @@ void R_DeleteTextures( void ) {
 	tr.numImages = 0;
 
 	Com_Memset( glState.currenttextures, 0, sizeof( glState.currenttextures ) );
-		qglBindTexture( GL_TEXTURE_2D, 0 );
+	GL_SelectTexture( 1 );
+	qglBindTexture( GL_TEXTURE_2D, 0 );
+	GL_SelectTexture( 0 );
+	qglBindTexture( GL_TEXTURE_2D, 0 );
 }
 
 /*
