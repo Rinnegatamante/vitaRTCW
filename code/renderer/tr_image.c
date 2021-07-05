@@ -738,6 +738,7 @@ static void Upload32(   unsigned *data,
 	unsigned    *resampledBuffer = NULL;
 	int i, c;
 	byte        *scan;
+	GLboolean compressed = GL_FALSE;
 	GLenum internalFormat = GL_RGB;
 	float rMax = 0, gMax = 0, bMax = 0;
 	static int rmse_saved = 0;
@@ -919,6 +920,7 @@ static void Upload32(   unsigned *data,
 			else if ( !noCompress)
 			{
 					internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+					compressed = GL_TRUE;
 			}
 			else
 			{
@@ -935,6 +937,7 @@ static void Upload32(   unsigned *data,
 			else if ( !noCompress)
 			{
 					internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+					compressed = GL_TRUE;
 			}
 			else
 			{
@@ -982,27 +985,29 @@ static void Upload32(   unsigned *data,
 	qglTexImage2D( GL_TEXTURE_2D, 0, internalFormat, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scaledBuffer );
 
 	if ( mipmap ) {
-		int miplevel;
+		if (compressed) {
+			int miplevel;
 
-		miplevel = 0;
-		while ( scaled_width > 1 || scaled_height > 1 )
-		{
-			R_MipMap( (byte *)scaledBuffer, scaled_width, scaled_height );
-			scaled_width >>= 1;
-			scaled_height >>= 1;
-			if ( scaled_width < 1 ) {
-				scaled_width = 1;
-			}
-			if ( scaled_height < 1 ) {
-				scaled_height = 1;
-			}
-			miplevel++;
+			miplevel = 0;
+			while (scaled_width > 4 && scaled_height > 4)
+			{
+				R_MipMap( (byte *)scaledBuffer, scaled_width, scaled_height );
+				scaled_width >>= 1;
+				scaled_height >>= 1;
+				if ( scaled_width < 1 ) {
+					scaled_width = 1;
+				}
+				if ( scaled_height < 1 ) {
+					scaled_height = 1;
+				}
+				miplevel++;
 
-			if ( r_colorMipLevels->integer ) {
-				R_BlendOverTexture( (byte *)scaledBuffer, scaled_width * scaled_height, mipBlendColors[miplevel] );
+				if ( r_colorMipLevels->integer ) {
+					R_BlendOverTexture( (byte *)scaledBuffer, scaled_width * scaled_height, mipBlendColors[miplevel] );
+				}
+				qglTexImage2D( GL_TEXTURE_2D, miplevel, internalFormat, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scaledBuffer );
 			}
-			qglTexImage2D( GL_TEXTURE_2D, miplevel, internalFormat, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scaledBuffer );
-		}
+		} else glGenerateMipmap(GL_TEXTURE_2D);
 	}
 done:
 
