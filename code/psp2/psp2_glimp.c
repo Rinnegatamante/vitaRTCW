@@ -30,6 +30,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <vitasdk.h>
 #include "vitaGL.h"
+#include <pthread.h>
 
 /*
 ===============
@@ -163,4 +164,88 @@ void GLimp_EndFrame( void )
 	gVertexBuffer = gVertexBufferPtr;
 	gColorBuffer = gColorBufferPtr;
 	gTexCoordBuffer = gTexCoordBufferPtr;
+}
+
+/*
+===========================================================
+SMP acceleration
+===========================================================
+*/
+
+SceUID smpMutex;
+SceUID renderCommandsEvent;
+SceUID renderCompletedEvent;
+
+void ( *glimpRenderThread )( void );
+
+void *GLimp_RenderThreadWrapper( void *stub ) {
+	glimpRenderThread();
+	return NULL;
+}
+
+
+/*
+=======================
+GLimp_SpawnRenderThread
+=======================
+*/
+pthread_t renderThreadHandle;
+qboolean GLimp_SpawnRenderThread( void ( *function )( void ) ) {
+	
+	smpMutex = sceKernelCreateMutex("SMP Mutex", 0, 0, NULL);
+	renderCommandsEvent = sceKernelCreateCond("Commands Cond", 0, smpMutex, NULL);
+	renderCompletedEvent = sceKernelCreateCond("Completed Cond", 0, smpMutex, NULL);
+
+	glimpRenderThread = function;
+
+	if ( pthread_create( &renderThreadHandle, NULL,
+						 GLimp_RenderThreadWrapper, NULL ) ) {
+		return qfalse;
+	}
+
+	return qtrue;
+}
+
+static volatile void    *smpData = NULL;
+static volatile qboolean smpDataReady;
+//static	int		glXErrors; // bk001204 - unused
+
+void *GLimp_RendererSleep( void ) {
+	void  *data;
+
+	// after this, the front end can exit GLimp_FrontEndSleep
+	sceKernelLockMutex(smpMutex, 1, NULL);
+	
+	smpData = NULL;
+	smpDataReady = qfalse;
+	
+	sceKernelSignalCondAll(renderCompletedEvent);
+	while ( !smpDataReady )
+		sceKernelWaitCond(renderCommandsEvent, NULL);
+
+	data = smpData;
+
+	// after this, the main thread can exit GLimp_WakeRenderer
+	sceKernelUnlockMutex(smpMutex, 1);
+
+	return data;
+}
+
+
+void GLimp_FrontEndSleep( void ) {
+	sceKernelLockMutex(smpMutex, 1, NULL);
+	sceKernelWaitCond(renderCompletedEvent, NULL);
+	sceKernelUnlockMutex(smpMutex, 1);
+}
+
+
+void GLimp_WakeRenderer( void *data ) {
+	sceKernelLockMutex(smpMutex, 1, NULL);
+	
+	smpData = data;
+	smpDataReady = qtrue;
+
+	sceKernelSignalCondAll(renderCommandsEvent);
+
+	sceKernelUnlockMutex(smpMutex, 1);
 }

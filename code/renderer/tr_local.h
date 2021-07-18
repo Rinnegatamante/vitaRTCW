@@ -52,6 +52,8 @@ typedef unsigned short glIndex_t;
 typedef unsigned short glIndex_t;
 #endif
 
+#define SMP_FRAMES      2
+
 // 11 bits
 // can't be increased without changing bit packing for drawsurfs
 // see QSORT_SHADERNUM_SHIFT
@@ -634,7 +636,7 @@ typedef struct srfGridMesh_s {
 	surfaceType_t surfaceType;
 
 	// dynamic lighting information
-	int dlightBits;
+	int dlightBits[SMP_FRAMES];
 
 	// culling information
 	vec3_t meshBounds[2];
@@ -663,7 +665,7 @@ typedef struct {
 	cplane_t plane;
 
 	// dynamic lighting information
-	int dlightBits;
+	int dlightBits[SMP_FRAMES];
 
 	// triangle definitions (no normals at points)
 	int numPoints;
@@ -679,7 +681,7 @@ typedef struct {
 	surfaceType_t surfaceType;
 
 	// dynamic lighting information
-	int dlightBits;
+	int dlightBits[SMP_FRAMES];
 
 	// culling information (FIXME: use this!)
 	vec3_t bounds[2];
@@ -989,6 +991,7 @@ typedef struct {
 // all state modified by the back end is seperated
 // from the front end state
 typedef struct {
+	int smpFrame;
 	trRefdef_t refdef;
 	viewParms_t viewParms;
 	orientationr_t  or;
@@ -1023,7 +1026,7 @@ typedef struct {
 	int sceneCount;                         // incremented every scene
 	int viewCount;                          // incremented every view (twice a scene if portaled)
 											// and every R_MarkFragments call
-
+	int smpFrame;
 	int frameSceneNum;                      // zeroed at RE_BeginFrame
 
 	qboolean worldMapLoaded;
@@ -1190,7 +1193,8 @@ extern cvar_t  *r_nocull;
 extern cvar_t  *r_facePlaneCull;        // enables culling of planar surfaces with back side test
 extern cvar_t  *r_nocurves;
 extern cvar_t  *r_showcluster;
-
+extern cvar_t  *r_smp;
+extern cvar_t  *r_showSmp;
 extern cvar_t   *r_mode;                // video mode
 extern cvar_t   *r_fullscreen;
 extern cvar_t	*r_noborder;
@@ -1882,9 +1886,9 @@ typedef struct {
 
 extern int max_polys;
 extern int max_polyverts;
-
-extern backEndData_t   *backEndData;    // the second one may not be allocated
-
+extern volatile qboolean renderThreadActive;
+extern backEndData_t   *backEndData[SMP_FRAMES];    // the second one may not be allocated
+void RB_RenderThread( void );
 void *R_GetCommandBuffer( int bytes );
 void RB_ExecuteRenderCommands( const void *data );
 

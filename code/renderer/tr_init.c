@@ -60,6 +60,9 @@ cvar_t  *r_displayRefresh;
 
 cvar_t  *r_detailTextures;
 
+cvar_t  *r_smp;
+cvar_t  *r_showSmp;
+
 cvar_t  *r_znear;
 cvar_t	*r_zproj;
 cvar_t	*r_stereoSeparation;
@@ -272,6 +275,9 @@ static void InitOpenGL( void ) {
 			glConfig.maxTextureSize = 0;
 		}
 	}
+	
+	// init command buffers and SMP
+	R_InitCommandBuffers();
 
 	// set default state
 	GL_SetDefaultState();
@@ -1025,6 +1031,8 @@ void R_Register( void ) {
 	r_uiFullScreen = ri.Cvar_Get( "r_uifullscreen", "1", 0 );
 	r_subdivisions = ri.Cvar_Get( "r_subdivisions", "4", CVAR_ARCHIVE | CVAR_LATCH );
 	r_stereoEnabled = ri.Cvar_Get( "r_stereoEnabled", "0", CVAR_ARCHIVE | CVAR_LATCH);
+	r_smp = ri.Cvar_Get( "r_smp", "1", CVAR_ARCHIVE | CVAR_LATCH );
+	r_showSmp = ri.Cvar_Get( "r_showSmp", "0", CVAR_CHEAT );
 	r_ignoreFastPath = ri.Cvar_Get( "r_ignoreFastPath", "1", CVAR_ARCHIVE | CVAR_LATCH );
 
 	r_greyscale = ri.Cvar_Get("r_greyscale", "0", CVAR_ARCHIVE | CVAR_LATCH);
@@ -1239,10 +1247,18 @@ void R_Init( void ) {
 		max_polyverts = MAX_POLYVERTS;
 	}
 
-	ptr = ri.Hunk_Alloc( sizeof( *backEndData ) + sizeof(srfPoly_t) * max_polys + sizeof(polyVert_t) * max_polyverts, h_low);
-	backEndData = (backEndData_t *) ptr;
-	backEndData->polys = (srfPoly_t *) ((char *) ptr + sizeof( *backEndData ));
-	backEndData->polyVerts = (polyVert_t *) ((char *) ptr + sizeof( *backEndData ) + sizeof(srfPoly_t) * max_polys);
+	ptr = ri.Hunk_Alloc( sizeof( *backEndData[0] ) + sizeof(srfPoly_t) * max_polys + sizeof(polyVert_t) * max_polyverts, h_low);
+	backEndData[0] = (backEndData_t *) ptr;
+	if ( r_smp->integer ) {
+//		backEndData[1] = ri.Hunk_Alloc( sizeof( *backEndData[1] ), h_low );
+		backEndData[1] = ri.Hunk_Alloc( sizeof( *backEndData[1] ) + sizeof( srfPoly_t ) * max_polys + sizeof( polyVert_t ) * max_polyverts, h_low );
+		backEndData[1]->polys = (srfPoly_t *) ((char *) ptr + sizeof( *backEndData[1] ));
+		backEndData[1]->polyVerts = (polyVert_t *) ((char *) ptr + sizeof( *backEndData[1] ) + sizeof(srfPoly_t) * max_polys);
+	} else {
+		backEndData[1] = NULL;
+	}
+	backEndData[0]->polys = (srfPoly_t *) ((char *) ptr + sizeof( *backEndData[0] ));
+	backEndData[0]->polyVerts = (polyVert_t *) ((char *) ptr + sizeof( *backEndData[0] ) + sizeof(srfPoly_t) * max_polys);
 
 	R_InitNextFrame();
 
