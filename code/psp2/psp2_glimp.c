@@ -220,9 +220,9 @@ void *GLimp_RendererSleep( void ) {
 	smpDataReady = qfalse;
 	
 	sceKernelSignalCondAll(renderCompletedEvent);
-	while ( !smpDataReady )
+	while ( !smpDataReady ) {
 		sceKernelWaitCond(renderCommandsEvent, NULL);
-
+	}
 	data = smpData;
 
 	// after this, the main thread can exit GLimp_WakeRenderer
@@ -234,7 +234,9 @@ void *GLimp_RendererSleep( void ) {
 
 void GLimp_FrontEndSleep( void ) {
 	sceKernelLockMutex(smpMutex, 1, NULL);
-	sceKernelWaitCond(renderCompletedEvent, NULL);
+	while ( smpData ) {
+		sceKernelWaitCond(renderCompletedEvent, NULL);
+	}
 	sceKernelUnlockMutex(smpMutex, 1);
 }
 
@@ -249,3 +251,81 @@ void GLimp_WakeRenderer( void *data ) {
 
 	sceKernelUnlockMutex(smpMutex, 1);
 }
+/*
+static pthread_mutex_t	smpMutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t		renderCommandsEvent = PTHREAD_COND_INITIALIZER;
+static pthread_cond_t		renderCompletedEvent = PTHREAD_COND_INITIALIZER;
+
+void ( *glimpRenderThread )( void );
+
+void *GLimp_RenderThreadWrapper( void *stub ) {
+	glimpRenderThread();
+	return NULL;
+}
+
+pthread_t renderThreadHandle;
+qboolean GLimp_SpawnRenderThread( void ( *function )( void ) ) {
+	
+	pthread_mutex_init( &smpMutex, NULL );
+
+	pthread_cond_init( &renderCommandsEvent, NULL );
+	pthread_cond_init( &renderCompletedEvent, NULL );
+
+	glimpRenderThread = function;
+
+	if ( pthread_create( &renderThreadHandle, NULL,
+						 GLimp_RenderThreadWrapper, NULL ) ) {
+		return qfalse;
+	}
+
+	return qtrue;
+}
+
+static volatile void    *smpData = NULL;
+static volatile qboolean smpDataReady;
+//static	int		glXErrors; // bk001204 - unused
+
+void *GLimp_RendererSleep( void ) {
+	void  *data;
+
+	pthread_mutex_lock( &smpMutex );
+	{
+		smpData = NULL;
+		smpDataReady = qfalse;
+
+		// after this, the front end can exit GLimp_FrontEndSleep
+		pthread_cond_signal( &renderCompletedEvent );
+
+		while ( !smpDataReady ) {
+			pthread_cond_wait( &renderCommandsEvent, &smpMutex );
+		}
+
+		data = (void *)smpData;
+	}
+	pthread_mutex_unlock( &smpMutex );
+
+	return data;
+}
+
+void GLimp_FrontEndSleep( void ) {
+	pthread_mutex_lock( &smpMutex );
+	{
+		while ( smpData ) {
+			pthread_cond_wait( &renderCompletedEvent, &smpMutex );
+		}
+	}
+	pthread_mutex_unlock( &smpMutex );
+}
+
+void GLimp_WakeRenderer( void *data ) {
+	pthread_mutex_lock( &smpMutex );
+	{
+		assert( smpData == NULL );
+		smpData = data;
+		smpDataReady = qtrue;
+
+		// after this, the renderer can continue through GLimp_RendererSleep
+		pthread_cond_signal( &renderCommandsEvent );
+	}
+	pthread_mutex_unlock( &smpMutex );
+}*/
