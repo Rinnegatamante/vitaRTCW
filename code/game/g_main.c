@@ -48,6 +48,9 @@ gclient_t g_clients[MAX_CLIENTS];
 
 gentity_t       *g_camEnt = NULL;   //----(SA)	script camera
 
+gentity_t *g_autoAimEntity; //Added by Emile Belanger, trying to do proper autoaim
+unsigned int g_autoAimLastHitTime;
+
 // Rafael gameskill
 extern int bg_pmove_gameskill_integer;
 // done
