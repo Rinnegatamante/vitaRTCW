@@ -40,8 +40,6 @@ extern uint16_t *indices;
 
 #define APIENTRY
 #define APIENTRYP APIENTRY *
-#define GL_RGB8 GL_RGB
-#define GL_RGBA8 GL_RGBA
 
 #define qglGenTextures glGenTextures
 #define qglGetIntegerv glGetIntegerv

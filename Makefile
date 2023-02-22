@@ -6,12 +6,12 @@ SOURCES  := code/renderer code/qcommon code/botlib code/client code/server code/
 CPPSOURCES := code/splines
 INCLUDES := code/renderer code/qcommon code/botlib code/client code/server code/psp2 code/sys code/splines
 
-LIBS = -lvitaGL -lvorbisfile -lvorbis -logg  -lspeexdsp -lmpg123 \
-	-lc -lSceCommonDialog_stub -lSceAudio_stub -lSceLibKernel_stub \
+LIBS = -lvitaGL -lvorbisfile -lvorbis -logg  -lspeexdsp -lmpg123 -lvitashark -lSceShaccCgExt \
+	-lc -lSceCommonDialog_stub -lSceAudio_stub -lSceLibKernel_stub -ltaihen_stub \
 	-lSceNet_stub -lSceNetCtl_stub -lpng -lz -lSceDisplay_stub -lSceGxm_stub \
 	-lSceSysmodule_stub -lSceCtrl_stub -lSceTouch_stub -lSceMotion_stub -lm -lSceAppMgr_stub \
 	-lSceAppUtil_stub -lScePgf_stub -ljpeg -lSceRtc_stub -lScePower_stub -lmathneon \
-	-lvitashark -lSceShaccCg_stub -lSceKernelDmacMgr_stub
+	-lSceShaccCg_stub -lSceKernelDmacMgr_stub
 
 CFILES   := $(filter-out code/psp2/psp2_dll_hacks.c,$(foreach dir,$(SOURCES), $(wildcard $(dir)/*.c)))
 CPPFILES   := $(foreach dir,$(CPPSOURCES), $(wildcard $(dir)/*.cpp))
@@ -27,7 +27,7 @@ CFLAGS  = $(INCLUDE) -D__PSP2__ -D__FLOAT_WORD_ORDER=1 -D__GNU__ \
         -DUSE_ICON -DARCH_STRING=\"arm\" -DBOTLIB -DUSE_CODEC_VORBIS \
         -DPRODUCT_VERSION=\"1.36_GIT_ba68b99c-2018-01-23\" -DHAVE_VM_COMPILED=true \
         -mfpu=neon -mcpu=cortex-a9 -fsigned-char -DRELEASE \
-        -Wl,-q -O2 -ftree-vectorize -g -ffast-math -fno-short-enums
+        -Wl,-q -O3 -g -ffast-math -fno-short-enums
 CXXFLAGS  = $(CFLAGS) -fno-exceptions -std=gnu++11 -fpermissive
 ASFLAGS = $(CFLAGS)
 
@@ -66,6 +66,7 @@ $(TARGET).elf: $(OBJS)
 	$(CXX) $(CXXFLAGS) $^ $(LIBS) -o $@
 
 clean:
+	@make -f Makefile.mp clean
 	@make -C code/cgame clean
 	@make -C code/ui clean
 	@make -C code/game clean
