@@ -42,6 +42,11 @@ If you have questions concerning this license or the applicable additional terms
 #include "libmumblelink.h"
 #endif
 
+cvar_t *cl_gyroscope;
+cvar_t *cl_gyro_h_sensitivity;
+cvar_t *cl_gyro_v_sensitivity;
+cvar_t *cl_analog_slowdown;
+
 #ifdef USE_MUMBLE
 cvar_t	*cl_useMumble;
 cvar_t	*cl_mumbleScale;
@@ -4080,6 +4085,11 @@ void CL_Init( void ) {
 	Cvar_CheckRange(j_forward_axis, 0, MAX_JOYSTICK_AXIS-1, qtrue);
 	Cvar_CheckRange(j_side_axis, 0, MAX_JOYSTICK_AXIS-1, qtrue);
 	Cvar_CheckRange(j_up_axis, 0, MAX_JOYSTICK_AXIS-1, qtrue);
+
+	cl_gyroscope = Cvar_Get ("cl_gyroscope",      "1", CVAR_ARCHIVE);
+	cl_gyro_h_sensitivity = Cvar_Get ("cl_gyro_h_sensitivity", "0.5", CVAR_ARCHIVE);
+	cl_gyro_v_sensitivity = Cvar_Get ("cl_gyro_w_sensitivity", "0.5", CVAR_ARCHIVE);
+	cl_analog_slowdown = Cvar_Get ("cl_analog_slowdown", "1024", CVAR_ARCHIVE);
 
 	cl_motdString = Cvar_Get( "cl_motdString", "", CVAR_ROM );
 

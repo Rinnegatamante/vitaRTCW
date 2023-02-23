@@ -460,6 +460,11 @@ extern	cvar_t	*cl_useMumble;
 extern	cvar_t	*cl_mumbleScale;
 #endif
 
+extern cvar_t *cl_gyroscope;
+extern cvar_t *cl_gyro_h_sensitivity;
+extern cvar_t *cl_gyro_v_sensitivity;
+extern cvar_t *cl_analog_slowdown;
+
 #ifdef USE_VOIP
 // cl_voipSendTarget is a string: "all" to broadcast to everyone, "none" to
 //  send to no one, or a comma-separated list of client numbers:
