@@ -123,6 +123,18 @@ void IN_Frame( void )
 		hires_y %= (int)cl_analog_slowdown->value;
 	}
 	
+	// Gyroscope aiming
+	if (cl_gyroscope->value) {
+		SceMotionState motionstate;
+		sceMotionGetState(&motionstate);
+
+		// not sure why YAW or the horizontal x axis is the controlled by angularVelocity.y
+		// and the PITCH or the vertical y axis is controlled by angularVelocity.x but its what seems to work
+		float x_gyro_cam = 10 * motionstate.angularVelocity.y * cl_gyro_h_sensitivity->value;
+		float y_gyro_cam = 10 * motionstate.angularVelocity.x * cl_gyro_v_sensitivity->value;
+		Com_QueueEvent(time, SE_MOUSE, -x_gyro_cam, -y_gyro_cam, 0, NULL);
+	}
+	
 	// Emulating keys with left analog (TODO: Replace this dirty hack with a serious implementation)
 	uint32_t virt_buttons = 0x00;
 	if (keys.lx < 80) virt_buttons += LANALOG_LEFT;
@@ -150,6 +162,8 @@ IN_Init
 */
 void IN_Init( void *windowData )
 {
+	sceMotionReset();
+	sceMotionStartSampling();
 	sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
 	sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, SCE_TOUCH_SAMPLING_STATE_START);
 }
