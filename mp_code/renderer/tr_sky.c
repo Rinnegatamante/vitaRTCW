@@ -398,7 +398,7 @@ float *texcoord = gTexCoordBuffer;
 			gTexCoordBuffer += 2;
 			numindices += 2;
 		}
-		vglVertexPointerMapped(vertices);
+		vglVertexPointerMapped(3, vertices);
 		vglTexCoordPointerMapped(texcoord);
 		vglDrawObjects(GL_TRIANGLE_STRIP, numindices, GL_TRUE);
 	}
@@ -435,7 +435,7 @@ static void DrawSkySideInner( struct image_s *image, const int mins[2], const in
 			gTexCoordBuffer += 2;
 			numindices += 2;
 		}
-		vglVertexPointerMapped(vertices);
+		vglVertexPointerMapped(3, vertices);
 		vglTexCoordPointerMapped(texcoord);
 		vglDrawObjects(GL_TRIANGLE_STRIP, numindices, GL_TRUE);
 	}

@@ -146,7 +146,7 @@ static void DrawTris (shaderCommands_t *input) {
 		memcpy(gVertexBuffer, input->xyz[input->indexes[i]], sizeof(vec3_t));
 		gVertexBuffer += 3;
 	}
-	vglVertexPointerMapped(vertices);
+	vglVertexPointerMapped(3, vertices);
 	
 	//->if (qglLockArraysEXT) {
 	//->	qglLockArraysEXT(0, input->numVertexes);
@@ -186,7 +186,7 @@ static void DrawNormals (shaderCommands_t *input) {
 		memcpy(gVertexBuffer, temp, sizeof(vec3_t));
 		gVertexBuffer += 3;
 	}
-	vglVertexPointerMapped(vertices);
+	vglVertexPointerMapped(3, vertices);
 	vglDrawObjects(GL_LINES, input->numVertexes * 2, GL_TRUE);
 
 	qglDepthRange( 0, 1 );

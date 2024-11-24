@@ -46,9 +46,9 @@ typedef int	ioctlarg_t;
 #define INADDR_BROADCAST SCE_NET_INADDR_BROADCAST
 #define INADDR_ANY SCE_NET_INADDR_ANY
 
-const char *gai_strerror(int errcode) {
-    return "";
-}
+//const char *gai_strerror(int errcode) {
+//    return "";
+//}
 
 #define NI_NUMERICHOST 0
 
