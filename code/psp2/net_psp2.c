@@ -77,9 +77,9 @@ void freeaddrinfo(struct addrinfo *res) {
 
 }*/
 
-const char *gai_strerror(int errcode) {
-    return "";
-}
+//const char *gai_strerror(int errcode) {
+//    return "";
+//}
 
 #define NI_NUMERICHOST 0
 int getnameinfo(const struct sockaddr *sa, socklen_t salen,
