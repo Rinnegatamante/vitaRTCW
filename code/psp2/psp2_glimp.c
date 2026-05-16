@@ -76,7 +76,6 @@ This routine is responsible for initializing the OS specific portions
 of OpenGL
 ===============
 */
-uint16_t* indices;
 float *gVertexBuffer;
 uint8_t *gColorBuffer;
 float *gTexCoordBuffer;
@@ -118,18 +117,12 @@ void GLimp_Init( qboolean coreContext)
 	
 	if (!inited){
 		vglInitExtended(0, glConfig.vidWidth, glConfig.vidHeight, 0x2000000, SCE_GXM_MULTISAMPLE_4X);
-		vglUseVram(GL_TRUE);
 		inited = 1;
 		cur_width = glConfig.vidWidth;
 	}else if (glConfig.vidWidth != cur_width){ // Changed resolution in game, restarting the game
 		sceAppMgrLoadExec("app0:/eboot.bin", NULL, NULL);
 	}
-	int i;
-	indices = (uint16_t*)malloc(sizeof(uint16_t)*MAX_INDICES);
-	for (i=0;i<MAX_INDICES;i++){
-		indices[i] = i;
-	}
-	vglIndexPointerMapped(indices);
+	vglIndexPointerDefault();
 	glEnableClientState(GL_VERTEX_ARRAY);
 	gVertexBufferPtr = (float*)malloc(0x100000);
 	gColorBufferPtr = (uint8_t*)malloc(0x100000);
@@ -159,7 +152,7 @@ Responsible for doing a swapbuffers
 void GLimp_EndFrame( void )
 {
 	vglSwapBuffers(GL_FALSE);
-	vglIndexPointerMapped(indices);
+	vglIndexPointerDefault();
 	gVertexBuffer = gVertexBufferPtr;
 	gColorBuffer = gColorBufferPtr;
 	gTexCoordBuffer = gTexCoordBufferPtr;
