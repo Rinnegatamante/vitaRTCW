@@ -119,8 +119,8 @@ void GLimp_Init( qboolean coreContext)
 	if (!inited){
 		cur_width = glConfig.vidWidth;
 		cur_height = glConfig.vidHeight;
-		rend_mutex_in = sceKernelCreateSema("rend_mutex_in", 0, 0, 1, NULL);
-		rend_mutex_out = sceKernelCreateSema("rend_mutex_out", 0, 0, 1, NULL);
+		rend_mutex_in = sceKernelCreateSema("rend_mutex_in", 0, 0, BACKEND_DATA_NUM - 1, NULL);
+		rend_mutex_out = sceKernelCreateSema("rend_mutex_out", 0, 0, BACKEND_DATA_NUM - 1, NULL);
 		SceUID rend_thid = sceKernelCreateThread("Renderer Thread", &renderThread, 0x10000100, 0x40000, 0, 0, NULL);
 		sceKernelStartThread(rend_thid, 0, NULL);
 		sceKernelWaitSema(rend_mutex_out, 1, NULL);

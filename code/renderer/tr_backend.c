@@ -1093,7 +1093,7 @@ void    RB_SetGL2D( void ) {
 }
 
 #define MAX_CIN_SIZE (512 * 256 * 4)
-static byte rawCins[2][MAX_CIN_SIZE];
+static byte rawCins[BACKEND_DATA_NUM][MAX_CIN_SIZE];
 static int cinIdx = 0;
 
 /*
