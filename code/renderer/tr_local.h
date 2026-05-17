@@ -30,6 +30,14 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef TR_LOCAL_H
 #define TR_LOCAL_H
 
+#include <vitasdk.h>
+
+#define BACKEND_DATA_NUM (2)
+extern int activeBackEnd;
+extern int rendBackEnd;
+extern SceUID rend_mutex_in;
+extern SceUID rend_mutex_out;
+
 #include "../qcommon/q_shared.h"
 #include "../qcommon/qfiles.h"
 #include "../qcommon/qcommon.h"
@@ -1510,7 +1518,16 @@ typedef struct shaderCommands_s
 	shaderStage_t   **xstages;
 } shaderCommands_t;
 
-extern shaderCommands_t tess;
+static inline uint32_t __get_arm_cp15_tls(void) {
+	uint32_t val;
+	__asm__ __volatile__("mrc p15, 0, %0, c13, c0, 3" : "=r" (val));
+	return val;
+}
+#define get_tls_addr() (__get_arm_cp15_tls() - 1980)
+#define set_tessPtr(x) *(uintptr_t *)get_tls_addr() = (uintptr_t)(x);
+#define tessPtr ((shaderCommands_t *)(*(uintptr_t *)get_tls_addr()))
+extern shaderCommands_t tessArray[BACKEND_DATA_NUM];
+#define tess (*tessPtr)
 
 #ifdef USE_BLOOM
 void RB_SetGL2D (void);
@@ -1842,6 +1859,15 @@ typedef struct
 	int commandId;
 } clearDepthCommand_t;
 
+typedef struct {
+    int commandId;
+    int x, y, w, h;
+    int cols, rows;
+    int client;
+    qboolean dirty;
+	void *data;
+} stretchRawCommand_t;
+
 typedef enum {
 	RC_END_OF_LIST,
 	RC_SET_COLOR,
@@ -1853,7 +1879,8 @@ typedef enum {
 	RC_SCREENSHOT,
 	RC_VIDEOFRAME,
 	RC_COLORMASK,
-	RC_CLEARDEPTH
+	RC_CLEARDEPTH,
+	RC_STRETCH_RAW
 } renderCommand_t;
 
 
@@ -1884,6 +1911,7 @@ extern int max_polys;
 extern int max_polyverts;
 
 extern backEndData_t   *backEndData;    // the second one may not be allocated
+extern	backEndData_t *backEndDataPtr[BACKEND_DATA_NUM];
 
 void *R_GetCommandBuffer( int bytes );
 void RB_ExecuteRenderCommands( const void *data );

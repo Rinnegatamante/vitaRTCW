@@ -1181,7 +1181,9 @@ void R_Init( void ) {
 	// clear all our internal state
 	memset( &tr, 0, sizeof( tr ) );
 	memset( &backEnd, 0, sizeof( backEnd ) );
-	memset( &tess, 0, sizeof( tess ) );
+	memset( &tessArray[0], 0, sizeof( tessArray[0] ) );
+	memset( &tessArray[1], 0, sizeof( tessArray[1] ) );
+	set_tessPtr(&tessArray[0]);
 
 	if(sizeof(glconfig_t) != 7268)
 		ri.Error( ERR_FATAL, "Mod ABI incompatible: sizeof(glconfig_t) == %u != 7268", (unsigned int) sizeof(glconfig_t));
@@ -1239,10 +1241,13 @@ void R_Init( void ) {
 		max_polyverts = MAX_POLYVERTS;
 	}
 
-	ptr = ri.Hunk_Alloc( sizeof( *backEndData ) + sizeof(srfPoly_t) * max_polys + sizeof(polyVert_t) * max_polyverts, h_low);
-	backEndData = (backEndData_t *) ptr;
-	backEndData->polys = (srfPoly_t *) ((char *) ptr + sizeof( *backEndData ));
-	backEndData->polyVerts = (polyVert_t *) ((char *) ptr + sizeof( *backEndData ) + sizeof(srfPoly_t) * max_polys);
+	for (int i = 0; i < BACKEND_DATA_NUM; i++) {
+		ptr = ri.Hunk_Alloc( sizeof( *backEndDataPtr[i] ) + sizeof(srfPoly_t) * max_polys + sizeof(polyVert_t) * max_polyverts, h_low);
+		backEndDataPtr[i] = (backEndData_t *) ptr;
+		backEndDataPtr[i]->polys = (srfPoly_t *) ((char *) ptr + sizeof( *backEndDataPtr[i] ));
+		backEndDataPtr[i]->polyVerts = (polyVert_t *) ((char *) ptr + sizeof( *backEndDataPtr[i] ) + sizeof(srfPoly_t) * max_polys);
+	}
+	backEndData = backEndDataPtr[0];
 
 	R_InitNextFrame();
 

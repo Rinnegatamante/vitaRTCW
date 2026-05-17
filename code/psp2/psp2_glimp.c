@@ -79,9 +79,6 @@ of OpenGL
 float *gVertexBuffer;
 uint8_t *gColorBuffer;
 float *gTexCoordBuffer;
-float *gVertexBufferPtr;
-uint8_t *gColorBufferPtr;
-float *gTexCoordBufferPtr;
 uint8_t inited = 0;
 
 typedef struct vidmode_s
@@ -92,7 +89,11 @@ typedef struct vidmode_s
 } vidmode_t;
 extern vidmode_t r_vidModes[];
 
-uint32_t cur_width;
+uint32_t cur_width, cur_height;
+
+SceUID rend_mutex_in, rend_mutex_out;
+
+extern int renderThread(int argc, void *argv);
 
 void GLimp_Init( qboolean coreContext)
 {
@@ -116,29 +117,28 @@ void GLimp_Init( qboolean coreContext)
 	glConfig.isFullscreen = qtrue;
 	
 	if (!inited){
-		vglInitExtended(0, glConfig.vidWidth, glConfig.vidHeight, 0x2000000, SCE_GXM_MULTISAMPLE_4X);
+		cur_width = glConfig.vidWidth;
+		cur_height = glConfig.vidHeight;
+		rend_mutex_in = sceKernelCreateSema("rend_mutex_in", 0, 0, 1, NULL);
+		rend_mutex_out = sceKernelCreateSema("rend_mutex_out", 0, 0, 1, NULL);
+		SceUID rend_thid = sceKernelCreateThread("Renderer Thread", &renderThread, 0x10000100, 0x40000, 0, 0, NULL);
+		sceKernelStartThread(rend_thid, 0, NULL);
+		sceKernelWaitSema(rend_mutex_out, 1, NULL);
+		sceKernelSignalSema(rend_mutex_out, 1);
 		inited = 1;
 		cur_width = glConfig.vidWidth;
-	}else if (glConfig.vidWidth != cur_width){ // Changed resolution in game, restarting the game
+		cur_height = glConfig.vidHeight;
+	} else if (glConfig.vidWidth != cur_width) {
+		// Changed resolution in game, restarting the game
 		sceAppMgrLoadExec("app0:/eboot.bin", NULL, NULL);
 	}
-	vglIndexPointerDefault();
-	glEnableClientState(GL_VERTEX_ARRAY);
-	gVertexBufferPtr = (float*)malloc(0x100000);
-	gColorBufferPtr = (uint8_t*)malloc(0x100000);
-	gTexCoordBufferPtr = (float*)malloc(0x100000);
-	gVertexBuffer = gVertexBufferPtr;
-	gColorBuffer = gColorBufferPtr;
-	gTexCoordBuffer = gTexCoordBufferPtr;
-	
+
 	strncpy(glConfig.vendor_string, glGetString(GL_VENDOR), sizeof(glConfig.vendor_string));
 	strncpy(glConfig.renderer_string, glGetString(GL_RENDERER), sizeof(glConfig.renderer_string));
 	strncpy(glConfig.version_string, glGetString(GL_VERSION), sizeof(glConfig.version_string));
 	strncpy(glConfig.extensions_string, glGetString(GL_EXTENSIONS), sizeof(glConfig.extensions_string));
 	
-	qglClearColor( 0, 0, 0, 1 );
-	qglClear( GL_COLOR_BUFFER_BIT );
-	
+	qglClearColor( 0, 0, 0, 1 );	
 }
 
 
@@ -153,7 +153,7 @@ void GLimp_EndFrame( void )
 {
 	vglSwapBuffers(GL_FALSE);
 	vglIndexPointerDefault();
-	gVertexBuffer = gVertexBufferPtr;
-	gColorBuffer = gColorBufferPtr;
-	gTexCoordBuffer = gTexCoordBufferPtr;
+	gVertexBuffer = (float *)vglAllocFromScratch(1024 * 1024);
+	gColorBuffer = (uint8_t *)vglAllocFromScratch(1024 * 1024);
+	gTexCoordBuffer = (float *)vglAllocFromScratch(1024 * 1024);
 }
