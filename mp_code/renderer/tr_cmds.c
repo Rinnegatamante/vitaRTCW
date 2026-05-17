@@ -28,6 +28,38 @@ If you have questions concerning this license or the applicable additional terms
 
 #include "tr_local.h"
 
+#ifdef __vita__
+#include <vitasdk.h>
+
+int rendBackEnd = 0;
+extern uint32_t cur_width;
+extern uint32_t cur_height;
+int rendThreadId;
+extern float *gVertexBuffer;
+extern uint8_t *gColorBuffer;
+extern float *gTexCoordBuffer;
+int renderThread(int argc, void *argv) {
+	rendThreadId = sceKernelGetThreadId();
+	vglInitExtended(0, glConfig.vidWidth, glConfig.vidHeight, 0x2000000, SCE_GXM_MULTISAMPLE_4X);
+	vglIndexPointerDefault();
+	glEnableClientState(GL_VERTEX_ARRAY);
+	sceKernelSignalSema(rend_mutex_out, 1);
+	gVertexBuffer = (float *)vglAllocFromScratch(1024 * 1024);
+	gColorBuffer = (uint8_t *)vglAllocFromScratch(1024 * 1024);
+	gTexCoordBuffer = (float *)vglAllocFromScratch(1024 * 1024);
+	for (;;) {
+		sceKernelWaitSema(rend_mutex_in, 1, NULL);
+		renderCommandList_t	*cmdList = &backEndDataPtr[rendBackEnd]->commands;
+		set_tessPtr(&tessArray[rendBackEnd]);
+		RB_ExecuteRenderCommands( cmdList->cmds );
+		sceKernelSignalSema(rend_mutex_out, 1);
+		rendBackEnd = !rendBackEnd;
+	}
+	
+	return sceKernelExitDeleteThread(0);
+}
+#endif
+
 /*
 =====================
 R_PerformanceCounters
@@ -96,6 +128,11 @@ void R_IssueRenderCommands( qboolean runPerformanceCounters ) {
 	// clear it out, in case this is a sync and not a buffer flip
 	cmdList->used = 0;
 
+#ifdef __vita__
+	sceKernelWaitSema(rend_mutex_out, 1, NULL);
+#endif
+
+#ifndef __vita__
 	if ( runPerformanceCounters ) {
 		R_PerformanceCounters();
 	}
@@ -105,6 +142,12 @@ void R_IssueRenderCommands( qboolean runPerformanceCounters ) {
 		// let it start on the new batch
 		RB_ExecuteRenderCommands( cmdList->cmds );
 	}
+#else
+	sceKernelSignalSema(rend_mutex_in, 1);
+	activeBackEnd = !activeBackEnd;
+	backEndData = backEndDataPtr[activeBackEnd];
+	set_tessPtr(&tessArray[activeBackEnd]);
+#endif
 }
 
 

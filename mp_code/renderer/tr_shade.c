@@ -75,7 +75,7 @@ SURFACE SHADERS
 =============================================================
 */
 
-shaderCommands_t tess;
+shaderCommands_t tessArray[BACKEND_DATA_NUM];
 static qboolean setArraysOnce;
 
 /*

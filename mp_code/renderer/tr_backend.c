@@ -29,9 +29,10 @@ If you have questions concerning this license or the applicable additional terms
 #include "tr_local.h"
 #include "qgl.h"
 
-backEndData_t  *backEndData;
+backEndData_t *backEndDataPtr[BACKEND_DATA_NUM];
+backEndData_t *backEndData;
 backEndState_t backEnd;
-
+int activeBackEnd = 0;
 
 static float s_flipMatrix[16] = {
 	// convert from our coordinate system (looking down X)
@@ -367,7 +368,7 @@ to actually render the visible surfaces for this view
 */
 void RB_BeginDrawingView( void ) {
 	int clearBits = 0;
-
+#ifndef __vita__
 	// sync with gl if needed
 	if ( r_finish->integer == 1 && !glState.finishCalled ) {
 		qglFinish();
@@ -376,7 +377,7 @@ void RB_BeginDrawingView( void ) {
 	if ( r_finish->integer == 0 ) {
 		glState.finishCalled = qtrue;
 	}
-
+#endif
 	// we will need to change the projection matrix before drawing
 	// 2D images again
 	backEnd.projection2D = qfalse;
@@ -748,37 +749,25 @@ void    RB_SetGL2D( void ) {
 }
 
 
+#define MAX_CIN_SIZE (512 * 256 * 4)
+static byte rawCins[BACKEND_DATA_NUM][MAX_CIN_SIZE];
+static int cinIdx = 0;
+
 /*
 =============
 RE_StretchRaw
 
-FIXME: not exactly backend
 Stretches a raw 32 bit power of 2 bitmap image over the given screen rectangle.
 Used for cinematics.
 =============
 */
 void RE_StretchRaw( int x, int y, int w, int h, int cols, int rows, const byte *data, int client, qboolean dirty ) {
-	int i, j;
-	int start, end;
+    stretchRawCommand_t *cmd;
+    int i, j;
 
-	if ( !tr.registered ) {
-		return;
-	}
-	R_IssuePendingRenderCommands();
-
-	if ( tess.numIndexes ) {
-		RB_EndSurface();
-	}
-
-	// we definately want to sync every frame for the cinematics
-	qglFinish();
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
-
-	start = 0;
-	if ( r_speeds->integer ) {
-		start = ri.Milliseconds();
-	}
+    if ( !tr.registered ) {
+        return;
+    }
 
 	// make sure rows and cols are powers of 2
 	for ( i = 0 ; ( 1 << i ) < cols ; i++ ) {
@@ -789,55 +778,94 @@ void RE_StretchRaw( int x, int y, int w, int h, int cols, int rows, const byte *
 		ri.Error( ERR_DROP, "Draw_StretchRaw: size not a power of 2: %i by %i", cols, rows );
 	}
 
-	RE_UploadCinematic (w, h, cols, rows, data, client, dirty);
-	GL_Bind( tr.scratchImage[client] );
+	memcpy( rawCins[cinIdx], data, cols * rows * 4 );
 
-	if ( r_speeds->integer ) {
-		end = ri.Milliseconds();
-		ri.Printf( PRINT_ALL, "qglTexSubImage2D %i, %i: %i msec\n", cols, rows, end - start );
+    cmd = R_GetCommandBuffer( sizeof( *cmd ) );
+    if ( !cmd ) {
+        return;
+    }
+
+    cmd->commandId = RC_STRETCH_RAW;
+    cmd->x = x;
+    cmd->y = y;
+    cmd->w = w;
+    cmd->h = h;
+    cmd->cols = cols;
+    cmd->rows = rows;
+    cmd->client = client;
+    cmd->dirty = dirty;
+	cmd->data = rawCins[cinIdx];
+	cinIdx = !cinIdx;
+	
+	R_IssuePendingRenderCommands();
+}
+
+/*
+=============
+RB_StretchRaw
+
+=============
+*/
+const void *RB_StretchRaw( const void *_data ) {
+	const stretchRawCommand_t *cmd = (const stretchRawCommand_t *)_data;
+    const byte *data = (const byte *)cmd->data;
+    int start, end;
+
+	if ( tess.numIndexes ) {
+		RB_EndSurface();
 	}
+
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
+	
+	start = 0;
+	if ( r_speeds->integer ) {
+		start = ri.Milliseconds();
+	}
+	
+	RE_UploadCinematic (cmd->w, cmd->h, cmd->cols, cmd->rows, data, cmd->client, cmd->dirty);
+
+	GL_Bind( tr.scratchImage[cmd->client] );
 
 	RB_SetGL2D();
 
 	qglColor3f( tr.identityLight, tr.identityLight, tr.identityLight );
 
 	float texcoords[] = {
-		0.5f / cols,  0.5f / rows,
-		( cols - 0.5f ) / cols ,  0.5f / rows,
-		( cols - 0.5f ) / cols, ( rows - 0.5f ) / rows,
-		0.5f / cols, ( rows - 0.5f ) / rows
+		0.5f / cmd->cols,  0.5f / cmd->rows,
+		( cmd->cols - 0.5f ) / cmd->cols ,  0.5f / cmd->rows,
+		( cmd->cols - 0.5f ) / cmd->cols, ( cmd->rows - 0.5f ) / cmd->rows,
+		0.5f / cmd->cols, ( cmd->rows - 0.5f ) / cmd->rows
 	};
 	float vertices[] = {
-		x, y, 0.0f,
-		x+w, y, 0.0f,
-		x+w, y+h, 0.0f,
-		x, y+h, 0.0f
+		cmd->x, cmd->y, 0.0f,
+		cmd->x+cmd->w, cmd->y, 0.0f,
+		cmd->x+cmd->w, cmd->y+cmd->h, 0.0f,
+		cmd->x, cmd->y+cmd->h, 0.0f
 	};
 	
 	vglVertexPointer(3, GL_FLOAT, 0, 4, vertices);
 	vglTexCoordPointer(2, GL_FLOAT, 0, 4, texcoords);
 	vglDrawObjects(GL_TRIANGLE_FAN, 4, GL_TRUE);
+	
+	return (const void *)(cmd + 1);
 }
 
-
 void RE_UploadCinematic( int w, int h, int cols, int rows, const byte *data, int client, qboolean dirty ) {
-
-	GL_Bind( tr.scratchImage[client] );
-
 	// if the scratchImage isn't in the format we want, specify it as a new texture
 	if ( cols != tr.scratchImage[client]->width || rows != tr.scratchImage[client]->height ) {
 		tr.scratchImage[client]->width = tr.scratchImage[client]->uploadWidth = cols;
 		tr.scratchImage[client]->height = tr.scratchImage[client]->uploadHeight = rows;
-		qglTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
-		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+		glTextureImage2D( tr.scratchImage[client]->texnum, 0, GL_RGB, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
+		glTextureParameteri( tr.scratchImage[client]->texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		glTextureParameteri( tr.scratchImage[client]->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		glTextureParameteri( tr.scratchImage[client]->texnum, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+		glTextureParameteri( tr.scratchImage[client]->texnum, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 	} else {
 		if ( dirty ) {
 			// otherwise, just subimage upload it so that drivers can tell we are going to be changing
 			// it and don't try and do a texture compression
-			qglTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
+			glTextureImage2D( tr.scratchImage[client]->texnum, 0, GL_RGB, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
 		}
 	}
 }
@@ -1176,9 +1204,9 @@ void RB_ShowImages( void ) {
 	}
 
 	qglClear( GL_COLOR_BUFFER_BIT );
-
+#ifndef __vita__
 	qglFinish();
-
+#endif
 
 	start = ri.Milliseconds();
 
@@ -1215,9 +1243,9 @@ void RB_ShowImages( void ) {
 		vglTexCoordPointer(2, GL_FLOAT, 0, 4, texcoord);
 		vglDrawObjects(GL_TRIANGLE_FAN, 4, GL_TRUE);
 	}
-
+#ifndef __vita__
 	qglFinish();
-
+#endif
 	end = ri.Milliseconds();
 	ri.Printf( PRINT_ALL, "%i msec to draw all images\n", end - start );
 
@@ -1301,10 +1329,11 @@ const void  *RB_SwapBuffers( const void *data ) {
 	}
 #endif
 
-
+#ifndef __vita__
 	if ( !glState.finishCalled ) {
 		qglFinish();
 	}
+#endif
 
 	GLimp_LogComment( "***************** RB_SwapBuffers *****************\n\n\n" );
 
@@ -1336,6 +1365,9 @@ void RB_ExecuteRenderCommands( const void *data ) {
 		switch ( *(const int *)data ) {
 		case RC_SET_COLOR:
 			data = RB_SetColor( data );
+			break;
+		case RC_STRETCH_RAW:
+			data = RB_StretchRaw( data );
 			break;
 		case RC_STRETCH_PIC:
 #ifdef USE_BLOOM
