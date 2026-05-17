@@ -89,6 +89,8 @@ typedef struct vidmode_s
 } vidmode_t;
 extern vidmode_t r_vidModes[];
 
+extern cvar_t *r_framecap;
+
 uint32_t cur_width, cur_height;
 
 SceUID rend_mutex_in, rend_mutex_out;
@@ -97,7 +99,8 @@ extern int renderThread(int argc, void *argv);
 
 void GLimp_Init( qboolean coreContext)
 {
-	
+	if (r_framecap->integer)
+		eglSwapInterval(NULL, 2);
 	if (r_mode->integer < 0) r_mode->integer = 3;
 	
 	glConfig.vidWidth = r_vidModes[r_mode->integer].width;
@@ -105,7 +108,7 @@ void GLimp_Init( qboolean coreContext)
 	glConfig.colorBits = 32;
 	glConfig.depthBits = 32;
 	glConfig.stencilBits = 8;
-	glConfig.displayFrequency = 60;
+	glConfig.displayFrequency = r_framecap->integer ? 30 : 60;
 	glConfig.stereoEnabled = qfalse;
 	
 	glConfig.driverType = GLDRV_ICD;

@@ -60,6 +60,8 @@ cvar_t  *r_displayRefresh;
 
 cvar_t  *r_detailTextures;
 
+cvar_t  *r_framecap;
+
 cvar_t  *r_znear;
 cvar_t	*r_zproj;
 cvar_t	*r_stereoSeparation;
@@ -1103,6 +1105,7 @@ void R_Register( void ) {
 	r_wolffog = ri.Cvar_Get( "r_wolffog", "1", 0 );
 	// done
 
+	r_framecap = ri.Cvar_Get( "r_framecap", "0", CVAR_ARCHIVE );
 	r_nocurves = ri.Cvar_Get( "r_nocurves", "0", CVAR_CHEAT );
 	r_drawworld = ri.Cvar_Get( "r_drawworld", "1", CVAR_CHEAT );
 	r_lightmap = ri.Cvar_Get( "r_lightmap", "0", CVAR_CHEAT );
