@@ -1241,6 +1241,47 @@ static void RB_CalcDiffuseColor_altivec( unsigned char *colors )
 		vec_ste((vector unsigned int)jVecChar,0,(unsigned int *)&colors[i*4]);	// store color
 	}
 }
+#elif defined(__vita__)
+#include <arm_neon.h>
+static void RB_CalcDiffuseColor_neon( unsigned char *colors )
+{
+    int             i;
+    float           *v, *normal;
+    trRefEntity_t   *ent;
+    int             numVertexes;
+
+    ent = backEnd.currentEntity;
+    numVertexes = tess.numVertexes;
+    v      = tess.xyz[0];
+    normal = tess.normal[0];
+
+    float32x4_t ambientV  = vld1q_f32( ent->ambientLight );   // [a0, a1, a2, 0]
+    float32x4_t directedV = vld1q_f32( ent->directedLight );  // [d0, d1, d2, 0]
+    float32x4_t lightDirV = vld1q_f32( ent->lightDir );       // [l0, l1, l2, 0]
+    float32x4_t zero      = vdupq_n_f32( 0.0f );
+    float32x4_t c255      = vdupq_n_f32( 255.0f );
+    float32x4_t alpha     = { 0.0f, 0.0f, 0.0f, 255.0f };
+
+    for ( i = 0; i < numVertexes; i++, v += 4, normal += 4 )
+    {
+        float32x4_t n = vld1q_f32( normal );
+        float32x4_t d = vmulq_f32( n, lightDirV );
+        float32x2_t dlow  = vget_low_f32( d );
+        float32x2_t dhigh = vget_high_f32( d );
+        float32x2_t dsum  = vpadd_f32( dlow, dlow );
+        float incoming    = vget_lane_f32( dsum, 0 ) + vget_lane_f32( dhigh, 0 );
+        if ( incoming < 0.0f ) incoming = 0.0f;
+        float32x4_t inc   = vdupq_n_f32( incoming );
+        float32x4_t result = vmlaq_f32( ambientV, inc, directedV );
+        result = vaddq_f32( result, alpha );
+        result = vmaxq_f32( result, zero );
+        result = vminq_f32( result, c255 );
+        uint32x4_t iresult = vcvtq_u32_f32( result );
+        uint16x4_t i16     = vmovn_u32( iresult );
+        uint8x8_t  i8      = vmovn_u16( vcombine_u16( i16, i16 ) );
+        vst1_lane_u32( (uint32_t *)&colors[i * 4], vreinterpret_u32_u8( i8 ), 0 );
+    }
+}
 #endif
 
 static void RB_CalcDiffuseColor_scalar( unsigned char *colors )
@@ -1299,6 +1340,10 @@ void RB_CalcDiffuseColor( unsigned char *colors )
 		return;
 	}
 #endif
+#ifdef __vita__
+	RB_CalcDiffuseColor_neon( colors );
+#else
 	RB_CalcDiffuseColor_scalar( colors );
+#endif
 }
 
