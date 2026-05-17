@@ -375,6 +375,7 @@ to actually render the visible surfaces for this view
 void RB_BeginDrawingView( void ) {
 	int clearBits = 0;
 
+#ifndef __vita__
 	// sync with gl if needed
 	if ( r_finish->integer == 1 && !glState.finishCalled ) {
 		qglFinish();
@@ -383,6 +384,7 @@ void RB_BeginDrawingView( void ) {
 	if ( r_finish->integer == 0 ) {
 		glState.finishCalled = qtrue;
 	}
+#endif
 
 	// we will need to change the projection matrix before drawing
 	// 2D images again
@@ -1462,8 +1464,9 @@ void RB_ShowImages( void ) {
 
 	qglClear( GL_COLOR_BUFFER_BIT );
 
+#ifndef __vita__
 	qglFinish();
-
+#endif
 
 	start = ri.Milliseconds();
 
@@ -1501,7 +1504,9 @@ void RB_ShowImages( void ) {
 		vglDrawObjects(GL_TRIANGLE_FAN, 4, GL_TRUE);
 	}
 
+#ifndef __vita__
 	qglFinish();
+#endif
 
 	end = ri.Milliseconds();
 	ri.Printf( PRINT_ALL, "%i msec to draw all images\n", end - start );
@@ -1566,9 +1571,11 @@ const void  *RB_SwapBuffers( const void *data ) {
 
 	cmd = (const swapBuffersCommand_t *)data;
 
+#ifndef __vita__
 	if ( !glState.finishCalled ) {
 		qglFinish();
 	}
+#endif
 
 	GLimp_LogComment( "***************** RB_SwapBuffers *****************\n\n\n" );
 
