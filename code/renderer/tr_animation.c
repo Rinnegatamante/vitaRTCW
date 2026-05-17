@@ -28,6 +28,7 @@ If you have questions concerning this license or the applicable additional terms
 
 
 #include "tr_local.h"
+void sincosf (float, float *, float *);
 
 /*
 
@@ -96,11 +97,6 @@ typedef struct {
     short *sh;
     short *sh2;
     float *pf;
-    float LAVangle;
-    float sp;
-    float sy;
-    float cp;
-    float cy;
     int totalrv;
     int totalrt;
     int totalv;
@@ -564,17 +560,16 @@ static ID_INLINE void Matrix3Transpose( const vec3_t matrix[3], vec3_t transpose
 	}
 }
 
-static ID_INLINE void LocalAngleVector( vec3_t angles, vec3_t forward, qboolean is_backend ) {
-	boneStates[is_backend].LAVangle = angles[YAW] * ( M_PI * 2 / 360 );
-	boneStates[is_backend].sy = sin( boneStates[is_backend].LAVangle );
-	boneStates[is_backend].cy = cos( boneStates[is_backend].LAVangle );
-	boneStates[is_backend].LAVangle = angles[PITCH] * ( M_PI * 2 / 360 );
-	boneStates[is_backend].sp = sin( boneStates[is_backend].LAVangle );
-	boneStates[is_backend].cp = cos( boneStates[is_backend].LAVangle );
+static ID_INLINE void LocalAngleVector( vec3_t angles, vec3_t forward ) {
+	float yaw = angles[YAW] * ( M_PI * 2 / 360 );
+	float sy, cy, sp, cp;
+	sincosf(yaw, &sy, &cy);
+	float pitch = angles[PITCH] * ( M_PI * 2 / 360 );
+	sincosf(pitch, &sp, &cp);
 
-	forward[0] = boneStates[is_backend].cp * boneStates[is_backend].cy;
-	forward[1] = boneStates[is_backend].cp * boneStates[is_backend].sy;
-	forward[2] = -boneStates[is_backend].sp;
+	forward[0] = cp * cy;
+	forward[1] = cp * sy;
+	forward[2] = -sp;
 }
 
 /*
@@ -663,20 +658,20 @@ void R_CalcBone( mdsHeader_t *header, const refEntity_t *refent, int boneNum, qb
 			s->angles[0] = s->cTBonePtr->ofsAngles[0];
 			s->angles[1] = s->cTBonePtr->ofsAngles[1];
 			s->angles[2] = 0;
-			LocalAngleVector( s->angles, s->vec, is_backend );
+			LocalAngleVector( s->angles, s->vec );
 			LocalVectorMA( s->parentBone->translation, s->thisBoneInfo->parentDist, s->vec, s->bonePtr->translation );
 		} else {
 
 			s->angles[0] = s->cBonePtr->ofsAngles[0];
 			s->angles[1] = s->cBonePtr->ofsAngles[1];
 			s->angles[2] = 0;
-			LocalAngleVector( s->angles, s->vec, is_backend );
+			LocalAngleVector( s->angles, s->vec );
 
 			if ( s->isTorso ) {
 				s->tangles[0] = s->cTBonePtr->ofsAngles[0];
 				s->tangles[1] = s->cTBonePtr->ofsAngles[1];
 				s->tangles[2] = 0;
-				LocalAngleVector( s->tangles, s->v2, is_backend );
+				LocalAngleVector( s->tangles, s->v2 );
 
 				// blend the angles together
 				SLerp_Normal( s->vec, s->v2, s->thisBoneInfo->torsoWeight, s->vec );
@@ -690,19 +685,19 @@ void R_CalcBone( mdsHeader_t *header, const refEntity_t *refent, int boneNum, qb
 		if ( s->fullTorso ) {
 			s->sh = (short *)s->cTBonePtr->ofsAngles; s->pf = s->angles;
 			*( s->pf++ ) = SHORT2ANGLE( *( s->sh++ ) ); *( s->pf++ ) = SHORT2ANGLE( *( s->sh++ ) ); *( s->pf++ ) = 0;
-			LocalAngleVector( s->angles, s->vec, is_backend );
+			LocalAngleVector( s->angles, s->vec );
 			LocalVectorMA( s->parentBone->translation, s->thisBoneInfo->parentDist, s->vec, s->bonePtr->translation );
 		} else {
 
 			s->sh = (short *)s->cBonePtr->ofsAngles; s->pf = s->angles;
 			*( s->pf++ ) = SHORT2ANGLE( *( s->sh++ ) ); *( s->pf++ ) = SHORT2ANGLE( *( s->sh++ ) ); *( s->pf++ ) = 0;
-			LocalAngleVector( s->angles, s->vec, is_backend );
+			LocalAngleVector( s->angles, s->vec );
 
 			if ( s->isTorso ) {
 				s->sh = (short *)s->cTBonePtr->ofsAngles;
 				s->pf = s->tangles;
 				*( s->pf++ ) = SHORT2ANGLE( *( s->sh++ ) ); *( s->pf++ ) = SHORT2ANGLE( *( s->sh++ ) ); *( s->pf++ ) = 0;
-				LocalAngleVector( s->tangles, s->v2, is_backend );
+				LocalAngleVector( s->tangles, s->v2 );
 
 				// blend the angles together
 				SLerp_Normal( s->vec, s->v2, s->thisBoneInfo->torsoWeight, s->vec );
@@ -839,13 +834,13 @@ void R_CalcBoneLerp( mdsHeader_t *header, const refEntity_t *refent, int boneNum
 		*( s->pf++ ) = SHORT2ANGLE( *( s->sh++ ) );
 		*( s->pf++ ) = SHORT2ANGLE( *( s->sh++ ) );
 		*( s->pf++ ) = 0;
-		LocalAngleVector( angles, s->v2, is_backend );     // new
+		LocalAngleVector( angles, s->v2 );     // new
 
 		s->pf = angles;
 		*( s->pf++ ) = SHORT2ANGLE( *( s->sh2++ ) );
 		*( s->pf++ ) = SHORT2ANGLE( *( s->sh2++ ) );
 		*( s->pf++ ) = 0;
-		LocalAngleVector( angles, vec, is_backend );    // old
+		LocalAngleVector( angles, vec );    // old
 
 		// blend the angles together
 		if ( s->fullTorso ) {
@@ -865,13 +860,13 @@ void R_CalcBoneLerp( mdsHeader_t *header, const refEntity_t *refent, int boneNum
 			*( s->pf++ ) = SHORT2ANGLE( *( s->sh++ ) );
 			*( s->pf++ ) = SHORT2ANGLE( *( s->sh++ ) );
 			*( s->pf++ ) = 0;
-			LocalAngleVector( angles, s->v2, is_backend );     // new
+			LocalAngleVector( angles, s->v2 );     // new
 
 			s->pf = angles;
 			*( s->pf++ ) = SHORT2ANGLE( *( s->sh2++ ) );
 			*( s->pf++ ) = SHORT2ANGLE( *( s->sh2++ ) );
 			*( s->pf++ ) = 0;
-			LocalAngleVector( angles, vec, is_backend );    // old
+			LocalAngleVector( angles, vec );    // old
 
 			// blend the angles together
 			SLerp_Normal( vec, s->v2, s->torsoFrontlerp, s->v2 );
