@@ -360,7 +360,7 @@ static void RB_SurfaceBeam( void ) {
 		gVertexBuffer+=3;
 	}
 	vglVertexPointerMapped(3, pPos);
-	vglDrawObjects(GL_TRIANGLE_STRIP, (NUM_BEAM_SEGS + 1) * 2, GL_TRUE);
+	vglDrawObjects(GL_TRIANGLE_STRIP, (NUM_BEAM_SEGS + 1) * 2);
 }
 
 //================================================================================
@@ -1427,7 +1427,7 @@ static void RB_SurfaceAxis( void ) {
 	glEnableClientState(GL_COLOR_ARRAY);
 	vglVertexPointer(3, GL_FLOAT, 0, 6, verts);
 	vglColorPointer(4, GL_FLOAT, 0, 6, clrs);
-	vglDrawObjects(GL_LINES, 6, GL_TRUE);
+	vglDrawObjects(GL_LINES, 6);
 	glDisableClientState(GL_COLOR_ARRAY);
 	glLineWidth( 1 );
 }

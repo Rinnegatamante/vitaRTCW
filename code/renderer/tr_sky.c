@@ -398,7 +398,7 @@ static void DrawSkySide( struct image_s *image, const int mins[2], const int max
 		}
 		vglVertexPointerMapped(3, vertices);
 		vglTexCoordPointerMapped(texcoord);
-		vglDrawObjects(GL_TRIANGLE_STRIP, numindices, GL_TRUE);
+		vglDrawObjects(GL_TRIANGLE_STRIP, numindices);
 	}
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
@@ -434,7 +434,7 @@ static void DrawSkySideInner( struct image_s *image, const int mins[2], const in
 		}
 		vglVertexPointerMapped(3, vertices);
 		vglTexCoordPointerMapped(texcoord);
-		vglDrawObjects(GL_TRIANGLE_STRIP, numindices, GL_TRUE);
+		vglDrawObjects(GL_TRIANGLE_STRIP, numindices);
 	}
 
 	qglDisable( GL_BLEND );

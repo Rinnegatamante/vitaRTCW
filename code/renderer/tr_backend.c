@@ -1191,7 +1191,7 @@ const void *RB_StretchRaw( const void *_data ) {
 	
 	vglVertexPointer(3, GL_FLOAT, 0, 4, vertices);
 	vglTexCoordPointer(2, GL_FLOAT, 0, 4, texcoords);
-	vglDrawObjects(GL_TRIANGLE_FAN, 4, GL_TRUE);
+	vglDrawObjects(GL_TRIANGLE_FAN, 4);
 	
 	return (const void *)(cmd + 1);
 }
@@ -1501,7 +1501,7 @@ void RB_ShowImages( void ) {
 	
 		vglVertexPointer(3, GL_FLOAT, 0, 4, vertex);
 		vglTexCoordPointer(2, GL_FLOAT, 0, 4, texcoord);
-		vglDrawObjects(GL_TRIANGLE_FAN, 4, GL_TRUE);
+		vglDrawObjects(GL_TRIANGLE_FAN, 4);
 	}
 
 #ifndef __vita__
