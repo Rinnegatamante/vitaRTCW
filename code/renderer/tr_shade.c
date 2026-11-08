@@ -111,11 +111,7 @@ static void R_BindAnimatedImage( textureBundle_t *bundle ) {
 		index = 0;  // may happen with shader time offsets
 	}
 
-	// Windows x86 doesn't load renderer DLL with 64 bit modulus
-	//index %= bundle->numImageAnimations;
-	while ( index >= bundle->numImageAnimations ) {
-		index -= bundle->numImageAnimations;
-	}
+	index %= bundle->numImageAnimations;
 
 	if ( bundle->isLightmap && ( backEnd.refdef.rdflags & RDF_SNOOPERVIEW ) ) {
 		GL_Bind( tr.whiteImage );
