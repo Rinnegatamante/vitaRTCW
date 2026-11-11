@@ -32,6 +32,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <errno.h>
 
 #include <vitasdk.h>
+#include <vitaGL.h>
 
 #include "sys_local.h"
 #include "sys_loadlib.h"
@@ -475,7 +476,7 @@ void Sys_SigHandler( int signal )
 main
 =================
 */
-int rtcw_main( int argc, char **argv )
+int rtcw_main( SceSize argc, void *argv )
 {
 	int   i;
 	char  commandLine[ MAX_STRING_CHARS ] = { 0 };

@@ -38,7 +38,7 @@ int rendThreadId;
 extern float *gVertexBuffer;
 extern uint8_t *gColorBuffer;
 extern float *gTexCoordBuffer;
-int renderThread(int argc, void *argv) {
+int renderThread(SceSize argc, void *argv) {
 	rendThreadId = sceKernelGetThreadId();
 	vglInitExtended(0, glConfig.vidWidth, glConfig.vidHeight, 0x2000000, SCE_GXM_MULTISAMPLE_4X);
 	vglIndexPointerDefault();

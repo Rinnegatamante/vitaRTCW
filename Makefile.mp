@@ -29,6 +29,8 @@ CFLAGS  = $(INCLUDE) -D__PSP2__ -D__FLOAT_WORD_ORDER=1 -D__GNU__ \
         -Wl,-q -O3 -g -ffast-math -fno-short-enums -DDEFAULT_BASEDIR=\"ux0:/data/iortcw\"
 CXXFLAGS  = $(CFLAGS) -fno-exceptions -std=gnu++11 -fpermissive
 ASFLAGS = $(CFLAGS)
+LDFLAGS += -pthread
+LIBS += $(shell arm-vita-eabi-pkg-config --static --libs libcurl)
 
 all: $(TARGET).bin
 
@@ -51,7 +53,7 @@ eboot.bin: $(TARGET).velf
 	vita-elf-create $< $@
 
 $(TARGET).elf: $(OBJS)
-	$(CXX) $(CXXFLAGS) $^ $(LIBS) -o $@
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LIBS) -o $@
 
 clean:
 	@make -C code/cgame clean

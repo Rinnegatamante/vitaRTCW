@@ -95,7 +95,7 @@ uint32_t cur_width, cur_height;
 
 SceUID rend_mutex_in, rend_mutex_out;
 
-extern int renderThread(int argc, void *argv);
+extern int renderThread(SceSize argc, void *argv);
 
 void GLimp_Init( qboolean coreContext)
 {
